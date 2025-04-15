@@ -51,12 +51,22 @@
 
         /* Heads-Up Display (HUD) */
         #hud {
-            position: absolute; top: 10px; left: 10px;
+            position: absolute; top: 10px; left: 10px; display: flex; /* Use flexbox */
+            flex-direction: column; /* Stack items vertically */
+            align-items: flex-start; /* Align items left */
+            gap: 5px; /* Space between score and streak */
             background-color: #222222; color: #00ff00;
             padding: 8px 15px; border: 2px solid #555555;
             font-size: 1em; z-index: 500; /* Above game elements */
             text-shadow: 1px 1px 0px #008000;
         }
+         /* Style for streak display in HUD */
+         #streak-display {
+             color: #FFA500; /* Orange color for streak */
+             font-size: 1.5em; /* Increased Size */
+             text-shadow: 1px 1px 0px #8B4513; /* Brown shadow */
+         }
+
 
         /* Screens (Start/Game Over) */
         .screen {
@@ -87,8 +97,43 @@
              margin-bottom: 2px;
         }
 
-        .screen p.stats { margin-bottom: 15px; font-size: 1.4em; color: #00ff00; }
-        .screen p.high-score-label { margin-bottom: 25px; font-size: 1.0em; color: #cccccc; }
+        /* Styles for Game Over Stats Alignment */
+        .stat-line {
+             display: flex;
+             justify-content: space-between; /* Pushes label left, value right */
+             width: 80%; /* Adjust width as needed */
+             max-width: 350px; /* Prevent getting too wide */
+             margin-bottom: 12px; /* Spacing between lines */
+             align-items: baseline; /* Align text along baseline */
+        }
+        .stat-label {
+             color: #cccccc; /* Grey label */
+             font-size: 1.0em;
+             text-align: left;
+             margin-right: 15px; /* Space between label and value */
+        }
+        .stat-value {
+             font-weight: bold;
+             font-size: 1.1em;
+             text-align: right;
+             color: #cccccc; /* Default value color (grey) */
+        }
+        /* Style for Final Score Label */
+        .final-score-label {
+            color: #00ff00; /* Green */
+            font-weight: bold; /* Match value */
+            font-size: 1.1em; /* Match value size */
+        }
+        .final-score-value { /* Specific style for final score number */
+             color: #00ff00; /* Green */
+             font-size: 1.3em; /* Larger */
+        }
+        /* Remove default margin from p tags used before if needed */
+        #game-over-screen p.stats, #game-over-screen p.high-score-label {
+            margin: 0; /* Remove default margins if using divs now */
+        }
+
+
         .screen button {
             padding: 12px 25px; font-size: 1.3em; cursor: pointer;
             background-color: #0000ff; color: white; border: 2px solid #ffffff;
@@ -334,6 +379,13 @@
              color: #00FFFF; /* Cyan for powerup points */
              text-shadow: 1px 1px 0px #008B8B; /* Dark Cyan shadow */
          }
+          /* Style for streak count popup */
+          .particle.streak-popup {
+             font-size: 16px;
+             color: #FFA500; /* Orange */
+             text-shadow: 1px 1px 0px #8B4513; /* Dark brown shadow */
+             animation: scoreFadeUp 0.6s ease-out forwards; /* Faster fade */
+         }
          /* Style for powerup activation text */
          .particle.powerup-text {
              font-size: 20px;
@@ -398,14 +450,20 @@
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 600px) {
-             #hud { font-size: 0.9em; padding: 6px 10px; }
+             #hud { font-size: 0.9em; padding: 6px 10px; gap: 3px; }
+             /* *** Increased Streak Size *** */
+             #streak-display { font-size: 1.3em; } /* Was 1.0em */
              .screen h1 { font-size: 1.8em; }
              /* Removed specific game over h1 size, inherits .screen h1 now */
              .screen p { font-size: 1.0em; }
               .screen p.instructions { font-size: 0.9em; line-height: 1.7; }
-             .screen p.stats { font-size: 1.2em; }
-             .screen p.high-score-label { font-size: 0.9em; }
-             .screen button { padding: 10px 20px; font-size: 1.1em; }
+             /* Adjust stat line styles for mobile */
+             .stat-line { width: 90%; max-width: 280px; margin-bottom: 8px; }
+             .stat-label { font-size: 0.9em; margin-right: 8px;}
+             .stat-value { font-size: 1.0em; }
+             .final-score-label { font-size: 1.0em; } /* Match mobile stat value size */
+             .final-score-value { font-size: 1.1em; }
+
              #player { font-size: 35px; left: 10%; }
              .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear { font-size: 30px; }
              #ground { height: 8%; } /* Adjust ground height */
@@ -430,6 +488,7 @@
              .particle.jump-star { font-size: 16px; }
              .particle.land-smoke { font-size: 20px; }
              .particle.score-popup { font-size: 16px; }
+             .particle.streak-popup { font-size: 14px; }
              .particle.powerup-text { font-size: 18px; }
              .particle.slowdown-text { font-size: 18px; }
              .particle.bear-mode-text { font-size: 20px; }
@@ -449,6 +508,7 @@
 
         <div id="hud" style="display: none;">
             <span>Score: <span id="score">0</span></span>
+            <span id="streak-display" style="display: none;">x0</span>
         </div>
         <div id="player">🦫</div>
         <div id="particles"></div>
@@ -468,8 +528,18 @@
         </div>
         <div id="game-over-screen" class="screen">
              <h1>Squished!</h1>
-            <p class="stats">Final Score: <span id="final-score">0</span></p>
-            <p class="high-score-label">High Score: <span id="high-score">0</span></p>
+             <div class="stat-line">
+                 <span class="stat-label final-score-label">Final Score:</span>
+                 <span class="stat-value final-score-value" id="final-score">0</span>
+             </div>
+             <div class="stat-line">
+                 <span class="stat-label">Longest Streak:</span>
+                 <span class="stat-value" id="longest-streak">0</span>
+             </div>
+              <div class="stat-line">
+                 <span class="stat-label">High Score:</span>
+                 <span class="stat-value" id="high-score">0</span>
+             </div>
              <button id="play-again-button">Play Again</button>
         </div>
     </div>
@@ -488,17 +558,19 @@
         const particlesContainer = document.getElementById('particles');
         const hud = document.getElementById('hud');
         const scoreDisplay = document.getElementById('score');
+        const streakDisplay = document.getElementById('streak-display'); // Added Streak Display selector
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const startButton = document.getElementById('start-button');
         const playAgainButton = document.getElementById('play-again-button');
         const finalScoreDisplay = document.getElementById('final-score');
+        const longestStreakDisplay = document.getElementById('longest-streak'); // Added Longest Streak selector
         const highScoreDisplay = document.getElementById('high-score');
 
         // Game Settings & State
         const HIGH_SCORE_KEY = 'beaverBashHighScore';
-        const DEFAULT_SKY_COLOR = '#44AAFF'; // Store default sky color (still needed?)
-        const INVINCIBLE_SKY_COLOR = '#DA70D6'; // Orchid color for invincibility overlay
+        const DEFAULT_SKY_COLOR = '#44AAFF';
+        const INVINCIBLE_SKY_COLOR = '#DA70D6';
         const INITIAL_GAME_SPEED = 4;
         const SPEED_INCREASE_INTERVAL = 8000;
         const SPEED_INCREMENT = 0.4;
@@ -507,8 +579,8 @@
         const JUMP_FORCE = -11;
         const DOUBLE_JUMP_FORCE = -9;
         const MAX_JUMPS = 2;
-        let GROUND_HEIGHT_PERCENT = 10; // Default, updated on load/resize
-        const PLAYER_BOTTOM_POS_PERCENT = GROUND_HEIGHT_PERCENT; // Player sits on ground
+        let GROUND_HEIGHT_PERCENT = 10;
+        const PLAYER_BOTTOM_POS_PERCENT = GROUND_HEIGHT_PERCENT;
         const OBSTACLE_SPAWN_MIN_INTERVAL = 800;
         const OBSTACLE_SPAWN_MAX_INTERVAL = 1800;
         const FLYING_OBSTACLE_CHANCE = 0.35;
@@ -517,37 +589,36 @@
         const CLOUD_SPAWN_INTERVAL = 5500;
         const MAX_CLOUDS = 6;
         const INITIAL_CLOUD_COUNT = 3;
-        const CLOUD_BASE_ANIMATION_DURATION = 60; // Match CSS base duration
-        const INITIAL_SUN_SPAWN_MIN = 100;  // 0.1s
-        const INITIAL_SUN_SPAWN_MAX = 100;  // 0.1s
-        const SUN_SPAWN_INTERVAL_MIN = 30000; // Min time between subsequent suns (30s)
-        const SUN_SPAWN_INTERVAL_MAX = 60000; // Max time between subsequent suns (60s)
-        const SUN_ANIMATION_DURATION = 80; // Seconds for sun scroll (was 150)
+        const CLOUD_BASE_ANIMATION_DURATION = 60;
+        const INITIAL_SUN_SPAWN_MIN = 100;
+        const INITIAL_SUN_SPAWN_MAX = 100;
+        const SUN_SPAWN_INTERVAL_MIN = 30000;
+        const SUN_SPAWN_INTERVAL_MAX = 60000;
+        const SUN_ANIMATION_DURATION = 80;
         const CROWN_EMOJI = '👑';
         const CROWN_POINTS = 50;
         const INSECT_SQUISH_POINTS = 25;
-        // *** Reverted Spawn Frequencies ***
-        const CROWN_SPAWN_CHANCE = 0.05; // Was 0.07
-        const LOG_EMOJI = '🪵'; // Log powerup
-        const LOG_SPAWN_CHANCE = 0.04; // Was 0.10
-        const BREAD_EMOJI = '🍞'; // Bread powerup
-        const BREAD_SPAWN_CHANCE = 0.03; // Was 0.20
-        const BEAR_EMOJI = '🐻'; // Bear powerup
-        const BEAR_SPAWN_CHANCE = 0.03; // Was 0.10
+        const CROWN_SPAWN_CHANCE = 0.05;
+        const LOG_EMOJI = '🪵';
+        const LOG_SPAWN_CHANCE = 0.04;
+        const BREAD_EMOJI = '🍞';
+        const BREAD_SPAWN_CHANCE = 0.03;
+        const BEAR_EMOJI = '🐻';
+        const BEAR_SPAWN_CHANCE = 0.03;
         const BEAR_MODE_PLAYER_EMOJI = '🐻';
-        const BEAR_MODE_OBSTACLE_EMOJI = '🐟'; // Changed to Fish
-        const BEAR_MODE_DURATION = 4000; // 4 seconds
-        const BEAR_MODE_POINTS = 100; // Points per fish hit
-        const INVINCIBILITY_DURATION = 4000; // 4 seconds (Log)
-        const INVINCIBILITY_POINTS = 25; // Points per obstacle hit while invincible (Log)
-        // Log invincibility scroll speed multiplier
-        const INVINCIBILITY_SPEED_MULTIPLIER = 3.0;
-        const SLOWDOWN_DURATION = 4000; // 4 seconds
-        const SLOWDOWN_MULTIPLIER = 0.3; // 30% speed
-        const TRIPLE_TAP_WINDOW = 350; // ms window for taps
-        const BOOST_DURATION = 1500; // ms boost duration
-        const BOOST_SPEED_MULTIPLIER = 2.0; // How much faster boost makes obstacles seem
-        const BOOST_PARTICLE_INTERVAL = 50; // ms between boost particles
+        const BEAR_MODE_OBSTACLE_EMOJI = '🐟';
+        const BEAR_MODE_DURATION = 4000;
+        const BEAR_MODE_POINTS = 100; // Increased points
+        const INVINCIBILITY_DURATION = 4000;
+        const INVINCIBILITY_POINTS = 25;
+        const INVINCIBILITY_SPEED_MULTIPLIER = 3.0; // Log invincibility speed
+        const SLOWDOWN_DURATION = 4000;
+        const SLOWDOWN_MULTIPLIER = 0.3;
+        const TRIPLE_TAP_WINDOW = 350;
+        const BOOST_DURATION = 1500;
+        const BOOST_SPEED_MULTIPLIER = 2.0;
+        const BOOST_PARTICLE_INTERVAL = 50;
+        const STREAK_START_THRESHOLD = 3; // Min streak count to show display/multiplier
 
         // Emojis
         const insectEmojis = ['🦟', '🦋', '🐜', '🐛'];
@@ -563,36 +634,105 @@
         let isGameOver = true;
         let gameSpeed = INITIAL_GAME_SPEED;
         let obstacles = [];
-        let collectibles = []; // Holds crowns, logs, bread, bears
+        let collectibles = [];
         let activeClouds = [];
-        let activeSun = null; // Track the sun element
+        let activeSun = null;
         let gameLoopInterval = null;
         let spawnTimeout = null;
         let speedIncreaseTimeout = null;
         let scoreUpdateInterval = null;
         let cloudSpawnTimeout = null;
-        let sunSpawnTimeout = null; // Timeout for scheduling sun
-        let sunCleanupTimeout = null; // Timeout for removing sun
+        let sunSpawnTimeout = null;
+        let sunCleanupTimeout = null;
         let lastLandTime = 0;
-        let lastTapTime = 0; // For triple tap detection
-        let tapCount = 0; // For triple tap detection
-        let isBoosting = false; // Boost state
-        let boostEndTime = 0; // When boost ends
-        let boostParticleInterval = null; // Interval for boost particles
-        let isInvincible = false; // Invincibility state (Log or Bear)
-        let invincibilityEndTime = 0; // When invincibility ends
-        let isSlowed = false; // Slowdown state
-        let slowdownEndTime = 0; // When slowdown ends
-        let isBearMode = false; // Bear mode state
-        let bearModeEndTime = 0; // When bear mode ends
+        let lastTapTime = 0;
+        let tapCount = 0;
+        let isBoosting = false;
+        let boostEndTime = 0;
+        let boostParticleInterval = null;
+        let isInvincible = false; // Log or Bear invincibility
+        let invincibilityEndTime = 0;
+        let isSlowed = false;
+        let slowdownEndTime = 0;
+        let isBearMode = false;
+        let bearModeEndTime = 0;
+        let currentStreak = 0; // Added streak counter
+        let longestStreak = 0; // Added longest streak tracker
 
 
         // --- Helper Functions ---
         function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
         function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-        function updateHUD() { scoreDisplay.textContent = Math.floor(score); }
+        function updateHUD() {
+             scoreDisplay.textContent = Math.floor(score);
+             updateStreakDisplay(); // Update streak display too
+        }
         function saveHighScore() { if (Math.floor(score) > highScore) { highScore = Math.floor(score); localStorage.setItem(HIGH_SCORE_KEY, highScore); } highScoreDisplay.textContent = highScore; }
         function loadHighScore() { const savedScore = localStorage.getItem(HIGH_SCORE_KEY); highScore = savedScore ? parseInt(savedScore, 10) : 0; highScoreDisplay.textContent = highScore; }
+
+        // --- Streak Functions ---
+        // *** Updated Streak Multiplier Logic (Uncapped) ***
+        function calculateStreakMultiplier(streak) {
+            if (streak < STREAK_START_THRESHOLD) return 1.0; // No bonus < 3
+            if (streak < 5) return 1.10;  // Streak 3-4: +10%
+            if (streak < 10) return 1.25; // Streak 5-9: +25%
+            // For streak 10+, start at 1.5x and add 0.2x for every 5 levels beyond 10
+            return 1.5 + Math.floor((streak - 10) / 5) * 0.2;
+        }
+
+
+        function updateStreakDisplay() {
+            if (currentStreak >= STREAK_START_THRESHOLD) {
+                streakDisplay.textContent = `x${currentStreak}`;
+                streakDisplay.style.display = 'inline';
+            } else {
+                streakDisplay.style.display = 'none';
+            }
+        }
+
+        // *** Updated incrementStreak for rounding and crown multiplier ***
+        function incrementStreak(pointsToAdd, scoreType, itemX, itemY) {
+            currentStreak++;
+            longestStreak = Math.max(longestStreak, currentStreak);
+            const multiplier = calculateStreakMultiplier(currentStreak);
+            let finalPoints = pointsToAdd; // Start with base points
+
+            // Apply multiplier to relevant types (now includes crown)
+            if (scoreType === 'insect' || scoreType === 'powerup' || scoreType === 'bear' || scoreType === 'crown') {
+                 finalPoints = pointsToAdd * multiplier; // Apply multiplier
+            }
+            // Powerups themselves don't award points
+            else if (scoreType === 'log' || scoreType === 'bread' || scoreType === 'bear-collect') { // Use 'bear-collect' to differentiate from bear hit
+                finalPoints = 0;
+            }
+
+            // *** Rounding Logic Added Here ***
+            // Round up to the nearest 5, but only if points > 0
+            if (finalPoints > 0) {
+                finalPoints = Math.ceil(finalPoints / 5) * 5;
+            }
+
+            score += finalPoints; // Add calculated & rounded points
+            updateHUD(); // Updates score and streak display
+
+            // Trigger streak visual effect if threshold met
+            if (currentStreak >= STREAK_START_THRESHOLD) {
+                const playerRect = player.getBoundingClientRect();
+                // Position streak particle higher above player
+                const particleX = playerRect.left + (playerRect.width / 2);
+                const particleY = playerRect.top - 40; // Increased offset
+                createParticle('streak', particleX, particleY, `x${currentStreak}`);
+            }
+            return finalPoints; // Return final points for score popup display
+        }
+
+
+        function resetStreak() {
+            // console.log("Streak Reset!"); // Debugging
+            currentStreak = 0;
+            updateStreakDisplay();
+        }
+
 
         // --- Particle System ---
         function createParticle(type, x, y, text = null, isSpecialScore = false) {
@@ -629,6 +769,11 @@
                     }
                     duration = 800;
                     break;
+                 case 'streak': // Added streak particle type
+                     particle.classList.add('streak-popup');
+                     emoji = text || '🔥'; // Use text (e.g., x4) or fire emoji
+                     duration = 600; // Faster fade
+                     break;
                  case 'boost':
                      particle.classList.add('boost-smoke');
                      emoji = '💨';
@@ -868,6 +1013,9 @@
             jumpsRemaining = MAX_JUMPS;
             isGameOver = false;
             cancelAllPowerups(); // Reset all powerup states
+            currentStreak = 0; // Reset streak
+            longestStreak = 0; // Reset longest streak
+            updateStreakDisplay(); // Hide streak display
             tapCount = 0;
             lastTapTime = 0;
             gameSpeed = INITIAL_GAME_SPEED;
@@ -896,7 +1044,7 @@
 
             startScreen.style.display = 'none';
             gameOverScreen.style.display = 'none';
-            hud.style.display = 'block';
+            hud.style.display = 'flex'; // Use flex for HUD layout
             updateHUD();
 
             // Ensure all layers are running
@@ -941,6 +1089,7 @@
 
             saveHighScore();
             finalScoreDisplay.textContent = Math.floor(score);
+            longestStreakDisplay.textContent = longestStreak; // Display longest streak
 
             hud.style.display = 'none';
             gameOverScreen.style.display = 'flex';
@@ -1041,17 +1190,33 @@
             }
 
             // --- Determine Effective Speed ---
-             // Priority: Boost > Log Invincibility > Slowdown > Normal
-             // Bear Mode uses normal speed unless boosting
+             // Priority: Boost > Log Invincibility > Slowdown > Streak > Normal
+             // Bear Mode uses normal speed unless boosting (or streak speed if applicable)
              let currentSpeedMultiplier = 1.0;
+             // Calculate base multiplier from streak IF no other powerup affects speed negatively
+             // AND not in bear mode (bear mode uses normal speed unless boosting)
+             // *** Updated Streak Speed Logic ***
+             if (!isBoosting && !(isInvincible && !isBearMode) && !isSlowed && !isBearMode) {
+                 if (currentStreak >= 15) {
+                     currentSpeedMultiplier = 1.4;
+                 } else if (currentStreak >= 10) {
+                     currentSpeedMultiplier = 1.3;
+                 } else if (currentStreak >= 5) {
+                     currentSpeedMultiplier = 1.2;
+                 } else if (currentStreak >= STREAK_START_THRESHOLD) { // 3-4
+                     currentSpeedMultiplier = 1.1;
+                 }
+             }
+             // Apply power-up multipliers (these take priority or modify the streak multiplier)
              if (isBoosting) {
-                 currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER;
-             } else if (isInvincible && !isBearMode) { // Only Log invincibility affects speed now
+                 currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER; // Boost overrides everything
+             } else if (isInvincible && !isBearMode) { // Log invincibility overrides streak/slowdown
                  currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
-             } else if (isSlowed) { // Slowdown applies only if not boosting or Log invincible
+             } else if (isSlowed) { // Slowdown overrides streak
                  currentSpeedMultiplier = SLOWDOWN_MULTIPLIER;
              }
-             // Bear mode itself doesn't change multiplier here
+             // If no overriding power-up, the streak multiplier calculated above remains.
+             // Bear mode itself doesn't change multiplier unless boosting is also active.
              const currentScrollSpeed = gameSpeed * currentSpeedMultiplier;
 
 
@@ -1099,29 +1264,27 @@
 
                 if (checkCollision(playerRect, obstacleRect)) {
                     if (isBearMode) {
-                         // Bear Mode: Destroy fish, get points
-                         score += BEAR_MODE_POINTS;
-                         updateHUD();
-                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${BEAR_MODE_POINTS}`, 'bear');
+                         // Bear Mode: Destroy fish, get points + streak
+                         const points = incrementStreak(BEAR_MODE_POINTS, 'bear', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'bear');
                          obstaclesToRemove.push(index);
                          obstacle.element.remove();
                     }
                     else if (isInvincible) { // Log Invincibility
-                         // Invincible: Destroy obstacle, get points
-                         score += INVINCIBILITY_POINTS;
-                         updateHUD();
-                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INVINCIBILITY_POINTS}`, 'powerup');
+                         // Invincible: Destroy obstacle, get points + streak
+                         const points = incrementStreak(INVINCIBILITY_POINTS, 'powerup', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'powerup');
                          obstaclesToRemove.push(index);
                          obstacle.element.remove();
                     } else if (obstacle.isInsect) {
-                        // Not Invincible: Squish Insect
-                        score += INSECT_SQUISH_POINTS;
-                        updateHUD();
-                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INSECT_SQUISH_POINTS}`, 'insect');
+                        // Not Invincible: Squish Insect, get points + streak
+                        const points = incrementStreak(INSECT_SQUISH_POINTS, 'insect', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'insect');
                         obstaclesToRemove.push(index);
                         obstacle.element.remove();
                     } else {
-                        // Not Invincible: Hit Fatal Animal
+                        // Not Invincible: Hit Fatal Animal - RESET STREAK
+                        resetStreak();
                         endGame();
                         return; // Stop processing this frame
                     }
@@ -1149,10 +1312,9 @@
                      item.element.style.left = `${item.x}px`;
                      const itemRect = item.element.getBoundingClientRect();
                      if (checkCollision(playerRect, itemRect)) {
-                         // Hit a transformed collectible (fish)
-                         score += BEAR_MODE_POINTS;
-                         updateHUD();
-                         createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${BEAR_MODE_POINTS}`, 'bear');
+                         // Hit a transformed collectible (fish) - counts for streak
+                         const points = incrementStreak(BEAR_MODE_POINTS, 'bear', itemRect.left + itemRect.width / 2, itemRect.top);
+                         createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${points}`, 'bear');
                          collectiblesToRemove.push(index);
                          item.element.remove();
                      } else if (item.x + itemRect.width < 0) {
@@ -1174,11 +1336,13 @@
                              invincibleOverlay.style.opacity = 0.4;
                              gameContainer.classList.add('invincible-mode');
                              createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
+                             incrementStreak(0, 'log', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for log itself
                         } else if (item.isBread) {
                              cancelAllPowerups('slowdown'); // Cancel others
                              isSlowed = true;
                              slowdownEndTime = Date.now() + SLOWDOWN_DURATION;
                              createParticle('slowdown-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'Loaf of bread!');
+                             incrementStreak(0, 'bread', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for bread itself
                         } else if (item.isBear) {
                              cancelAllPowerups('bear'); // Cancel others
                              isBearMode = true;
@@ -1190,11 +1354,11 @@
                              gameContainer.classList.add('invincible-mode'); // Use border pulse
                              transformToFish(); // Change existing items
                              createParticle('bear-mode-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'If you gotta eat...eat!');
+                             incrementStreak(0, 'bear-collect', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, use specific type
                         } else if (item.isCrown) {
-                             // Just collect crown, doesn't cancel other powerups
-                            score += CROWN_POINTS;
-                            updateHUD();
-                            createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top);
+                             // Collect crown, apply streak multiplier
+                             const finalPoints = incrementStreak(CROWN_POINTS, 'crown', itemRect.left + itemRect.width / 2, itemRect.top);
+                             createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${finalPoints}`); // Show final points
                         } else {
                             collected = false; // Should not happen, but safety check
                         }
