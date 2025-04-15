@@ -93,8 +93,14 @@
             padding: 12px 25px; font-size: 1.3em; cursor: pointer;
             background-color: #0000ff; color: white; border: 2px solid #ffffff;
             box-shadow: 4px 4px 0px #00008b;
+            transition: background-color 0.15s ease, color 0.15s ease; /* Smooth hover transition */
         }
         .screen button:active { background-color: #4444ff; transform: translate(2px, 2px); box-shadow: 2px 2px 0px #00008b; }
+        /* Added Hover Style */
+        .screen button:hover {
+             background-color: #4444ff; /* Lighter blue */
+             color: #ffff00; /* Yellow text */
+        }
         #game-over-screen { display: none; }
 
 
@@ -111,7 +117,7 @@
         #player.boosting {
              transform: scaleX(-1) rotate(-10deg);
         }
-         /* Style for when invincible */
+         /* Style for when invincible (includes Bear Mode) */
          #player.invincible {
              transform: scale(2) scaleX(-1);
              animation: rainbowGlow 0.7s linear infinite;
@@ -137,12 +143,13 @@
 
 
         /* Obstacles & Collectibles */
-        .obstacle, .collectible, .powerup-log { /* Added powerup-log */
+        .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear { /* Added powerups */
             position: absolute;
             /* bottom is set by JS */
             font-size: 35px;
             /* Movement handled by JS */
             will-change: transform; /* Optimize movement */
+            transition: filter 0.2s ease-in-out, content 0.1s; /* Smooth glow changes */
         }
         .obstacle { z-index: 45; }
         .collectible { /* Crown */
@@ -150,12 +157,27 @@
             filter: drop-shadow(0 0 5px gold);
         }
          .powerup-log { /* Log */
-             z-index: 46; /* Same level as crown */
-             filter: drop-shadow(0 0 6px #A0522D); /* Brownish glow */
-             animation: pulse 1.2s infinite alternate; /* Subtle pulse */
+             z-index: 46;
+             filter: drop-shadow(0 0 6px #A0522D);
+             animation: pulse 1.2s infinite alternate;
          }
+         .powerup-bread { /* Bread */
+             z-index: 46;
+             filter: drop-shadow(0 0 5px #DEB887);
+         }
+         .powerup-bear { /* Bear Collectible */
+              z-index: 46;
+              filter: drop-shadow(0 0 6px #8B4513); /* Darker brown glow */
+              animation: pulse 1.0s infinite alternate; /* Slightly faster pulse */
+         }
+         /* Style for obstacles when turned into fish */
+         .turned-fish { /* Renamed from turned-beaver */
+             /* Optional: slightly different appearance? */
+             /* filter: drop-shadow(0 0 3px blue); */
+         }
+
         .obstacle.insect {
-             /* Insects are now squishable, no special visual needed unless desired */
+             /* Insects are now squishable */
         }
 
          @keyframes pulse {
@@ -254,7 +276,7 @@
         /* --- Sun --- */
         .sun {
             position: absolute;
-            top: 2%;
+            top: -8vh; /* Position top edge above viewport */
             font-size: 56vh;
             color: #FFD700;
             text-shadow: 0 0 30px orange;
@@ -320,6 +342,22 @@
              text-shadow: 1px 1px 0px #008B8B, 0 0 5px white;
              animation: scoreFadeUp 1.2s ease-out forwards; /* Lasts longer */
          }
+         /* Style for slowdown activation text */
+         .particle.slowdown-text {
+             font-size: 20px;
+             color: #FF4500; /* OrangeRed */
+             font-weight: bold;
+             text-shadow: 1px 1px 0px #8B0000, 0 0 5px white;
+             animation: scoreFadeUp 1.0s ease-out forwards;
+         }
+         /* Style for Bear Mode activation text */
+         .particle.bear-mode-text {
+             font-size: 22px; /* Larger */
+             color: #FFA500; /* Orange */
+             font-weight: bold;
+             text-shadow: 1px 1px 0px #8B4513, 0 0 8px white;
+             animation: bearTextFadeUp 2.5s ease-out forwards; /* Use custom longer animation */
+         }
         /* Boost particle style */
         .particle.boost-smoke {
              font-size: 18px;
@@ -337,6 +375,12 @@
         @keyframes fadeOutUp { /* Default particle animation */
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-30px) scale(0.5); }
+        }
+        /* New animation for bear text fade */
+        @keyframes bearTextFadeUp {
+            0% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(-40px); } /* Stay visible longer */
+            100% { opacity: 0; transform: translateY(-50px); }
         }
         @keyframes burstUp { /* Jump star animation */
             0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
@@ -363,7 +407,7 @@
              .screen p.high-score-label { font-size: 0.9em; }
              .screen button { padding: 10px 20px; font-size: 1.1em; }
              #player { font-size: 35px; left: 10%; }
-             .obstacle, .collectible, .powerup-log { font-size: 30px; }
+             .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear { font-size: 30px; }
              #ground { height: 8%; } /* Adjust ground height */
              #player { bottom: 8%; } /* Match ground height */
              #mid-background { height: 22%; bottom: 8%; } /* Adjust hills for new ground height */
@@ -380,13 +424,15 @@
              /* Adjust sun size/pos for mobile */
              .sun {
                  font-size: 46vh;
-                 top: 1%;
+                 top: -6vh; /* was 0% */
              }
              .particle { font-size: 12px; }
              .particle.jump-star { font-size: 16px; }
              .particle.land-smoke { font-size: 20px; }
              .particle.score-popup { font-size: 16px; }
              .particle.powerup-text { font-size: 18px; }
+             .particle.slowdown-text { font-size: 18px; }
+             .particle.bear-mode-text { font-size: 20px; }
              .particle.boost-smoke { font-size: 14px; }
         }
     </style>
@@ -409,23 +455,22 @@
 
         <div id="start-screen" class="screen">
             <h1>Beaver Bash!</h1>
-            <p class="instructions">
+             <p class="instructions">
                  <strong>Tap Controls:</strong>
                  Single: Jump<br>
                  Double: Dbl Jump<br>
                  Triple: BOOST! 🚀<br>
                  <strong>Gameplay:</strong>
                  Squish Insects (+25)<br>
-                 Collect Items<br>
                  Avoid Animals!
              </p>
-            <button id="start-button">Start Running</button>
+             <button id="start-button">Start Game</button>
         </div>
         <div id="game-over-screen" class="screen">
              <h1>Squished!</h1>
             <p class="stats">Final Score: <span id="final-score">0</span></p>
             <p class="high-score-label">High Score: <span id="high-score">0</span></p>
-            <button id="play-again-button">Run Again</button>
+             <button id="play-again-button">Play Again</button>
         </div>
     </div>
 
@@ -439,7 +484,7 @@
         const treeLayer = document.getElementById('tree-layer');
         const cloudsContainer = document.getElementById('clouds');
         // Removed sunContainer selector
-        const invincibleOverlay = document.getElementById('invincible-overlay'); // Added overlay selector
+        const invincibleOverlay = document.getElementById('invincible-overlay');
         const particlesContainer = document.getElementById('particles');
         const hud = document.getElementById('hud');
         const scoreDisplay = document.getElementById('score');
@@ -451,7 +496,7 @@
         const highScoreDisplay = document.getElementById('high-score');
 
         // Game Settings & State
-        const HIGH_SCORE_KEY = 'beaverBashHighScore'; // Changed key for new name
+        const HIGH_SCORE_KEY = 'beaverBashHighScore';
         const DEFAULT_SKY_COLOR = '#44AAFF'; // Store default sky color (still needed?)
         const INVINCIBLE_SKY_COLOR = '#DA70D6'; // Orchid color for invincibility overlay
         const INITIAL_GAME_SPEED = 4;
@@ -481,13 +526,24 @@
         const CROWN_EMOJI = '👑';
         const CROWN_POINTS = 50;
         const INSECT_SQUISH_POINTS = 25;
-        const CROWN_SPAWN_CHANCE = 0.12;
+        // *** Reverted Spawn Frequencies ***
+        const CROWN_SPAWN_CHANCE = 0.05; // Was 0.07
         const LOG_EMOJI = '🪵'; // Log powerup
-        const LOG_SPAWN_CHANCE = 0.06; // Chance for log instead of obstacle/crown
-        const INVINCIBILITY_DURATION = 4000; // 4 seconds
-        const INVINCIBILITY_POINTS = 25; // Points per obstacle hit while invincible
-        // *** Faster scroll speed multiplier for invincibility ***
+        const LOG_SPAWN_CHANCE = 0.04; // Was 0.10
+        const BREAD_EMOJI = '🍞'; // Bread powerup
+        const BREAD_SPAWN_CHANCE = 0.03; // Was 0.20
+        const BEAR_EMOJI = '🐻'; // Bear powerup
+        const BEAR_SPAWN_CHANCE = 0.03; // Was 0.10
+        const BEAR_MODE_PLAYER_EMOJI = '🐻';
+        const BEAR_MODE_OBSTACLE_EMOJI = '🐟'; // Changed to Fish
+        const BEAR_MODE_DURATION = 4000; // 4 seconds
+        const BEAR_MODE_POINTS = 100; // Points per fish hit
+        const INVINCIBILITY_DURATION = 4000; // 4 seconds (Log)
+        const INVINCIBILITY_POINTS = 25; // Points per obstacle hit while invincible (Log)
+        // Log invincibility scroll speed multiplier
         const INVINCIBILITY_SPEED_MULTIPLIER = 3.0;
+        const SLOWDOWN_DURATION = 4000; // 4 seconds
+        const SLOWDOWN_MULTIPLIER = 0.3; // 30% speed
         const TRIPLE_TAP_WINDOW = 350; // ms window for taps
         const BOOST_DURATION = 1500; // ms boost duration
         const BOOST_SPEED_MULTIPLIER = 2.0; // How much faster boost makes obstacles seem
@@ -507,7 +563,7 @@
         let isGameOver = true;
         let gameSpeed = INITIAL_GAME_SPEED;
         let obstacles = [];
-        let collectibles = []; // Holds crowns and logs
+        let collectibles = []; // Holds crowns, logs, bread, bears
         let activeClouds = [];
         let activeSun = null; // Track the sun element
         let gameLoopInterval = null;
@@ -523,9 +579,13 @@
         let isBoosting = false; // Boost state
         let boostEndTime = 0; // When boost ends
         let boostParticleInterval = null; // Interval for boost particles
-        let isInvincible = false; // Invincibility state
+        let isInvincible = false; // Invincibility state (Log or Bear)
         let invincibilityEndTime = 0; // When invincibility ends
-        // Removed originalSkyColor
+        let isSlowed = false; // Slowdown state
+        let slowdownEndTime = 0; // When slowdown ends
+        let isBearMode = false; // Bear mode state
+        let bearModeEndTime = 0; // When bear mode ends
+
 
         // --- Helper Functions ---
         function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -535,7 +595,7 @@
         function loadHighScore() { const savedScore = localStorage.getItem(HIGH_SCORE_KEY); highScore = savedScore ? parseInt(savedScore, 10) : 0; highScoreDisplay.textContent = highScore; }
 
         // --- Particle System ---
-        function createParticle(type, x, y, text = null, isSpecialScore = false) { // Renamed flag
+        function createParticle(type, x, y, text = null, isSpecialScore = false) {
             const particle = document.createElement('div');
             particle.classList.add('particle');
             let emoji = '';
@@ -555,12 +615,15 @@
                     break;
                 case 'score':
                     particle.classList.add('score-popup');
-                    if (isSpecialScore === 'insect') { // Check specific type
+                    if (isSpecialScore === 'insect') {
                          particle.classList.add('insect-score');
                          emoji = text || `+${INSECT_SQUISH_POINTS}`;
                     } else if (isSpecialScore === 'powerup') {
                          particle.classList.add('powerup-score');
                          emoji = text || `+${INVINCIBILITY_POINTS}`;
+                    } else if (isSpecialScore === 'bear') {
+                         particle.classList.add('powerup-score');
+                         emoji = text || `+${BEAR_MODE_POINTS}`; // Uses updated constant
                     } else { // Default is crown score
                          emoji = text || `+${CROWN_POINTS}`;
                     }
@@ -573,10 +636,20 @@
                      y += getRandomInt(-5, 5);
                      duration = 300;
                      break;
-                 case 'powerup-activate': // Text for powerup activation
+                 case 'powerup-activate': // Text for log powerup activation
                      particle.classList.add('powerup-text');
                      emoji = text || 'INVINCIBLE!';
                      duration = 1200;
+                     break;
+                 case 'slowdown-activate': // Text for slowdown activation
+                     particle.classList.add('slowdown-text');
+                     emoji = text || 'Loaf of bread!'; // Updated text
+                     duration = 1000;
+                     break;
+                 case 'bear-mode-activate': // Text for bear mode activation
+                     particle.classList.add('bear-mode-text');
+                     emoji = text || 'If you gotta eat...eat!'; // Updated text
+                     duration = 2500; // Increased Duration
                      break;
                 default:
                     emoji = '❓';
@@ -586,6 +659,7 @@
             particle.style.top = `${y}px`;
             particlesContainer.appendChild(particle);
 
+            // Adjust timeout to match potentially longer animation
             setTimeout(() => {
                 particle.remove();
             }, duration);
@@ -673,8 +747,8 @@
 
         // --- Collision Detection ---
         function checkCollision(playerRect, itemRect) {
-            // Adjust padding based on invincibility (larger hitbox when large)
-            const scaleFactor = isInvincible ? 2 : 1; // Use 2x scale factor
+            // Adjust padding based on invincibility/bear mode (larger hitbox when large)
+            const scaleFactor = (isInvincible || isBearMode) ? 2 : 1; // Use 2x scale factor
             const baseWidth = player.clientWidth / scaleFactor; // Approx original width
             const baseHeight = player.clientHeight / scaleFactor; // Approx original height
             const paddingX = baseWidth * 0.2;
@@ -715,6 +789,75 @@
              player.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
          }
 
+         // --- Bear Mode Transformations ---
+         function transformToFish() { // Renamed
+             // Change existing obstacles
+             obstacles.forEach(obs => {
+                 obs.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                 obs.element.classList.add('turned-fish'); // Optional class
+             });
+             // Change existing collectibles (except the triggering bear)
+             collectibles.forEach(col => {
+                 if (!col.isBear) { // Don't change the bear that was just collected
+                     col.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                     col.element.classList.add('turned-fish');
+                 }
+             });
+         }
+
+         function revertFromFish() { // Renamed
+             // Revert obstacles
+             obstacles.forEach(obs => {
+                 // Only revert if it has an original emoji (might have been removed already)
+                 if (obs.element && obs.originalEmoji) {
+                     obs.element.textContent = obs.originalEmoji;
+                     obs.element.classList.remove('turned-fish');
+                 }
+             });
+             // Revert collectibles
+             collectibles.forEach(col => {
+                 // Only revert if it has an original emoji stored and still exists
+                 if (col.element && col.originalEmoji) {
+                    col.element.textContent = col.originalEmoji;
+                    col.element.classList.remove('turned-fish');
+                 }
+             });
+         }
+
+         // --- Cancel Powerup Effects ---
+         function cancelAllPowerups(except = null) { // Added 'except' parameter
+             if (except !== 'boost') {
+                 isBoosting = false;
+                 boostEndTime = 0;
+                 if (boostParticleInterval) clearInterval(boostParticleInterval);
+                 player.classList.remove('boosting');
+             }
+             // If cancelling because of Bear or Slowdown, cancel Log Invincibility visuals
+             if (except === 'bear' || except === 'slowdown') {
+                 isInvincible = false; // Ensure regular invincibility is off
+                 invincibilityEndTime = 0;
+                 invincibleOverlay.style.opacity = 0;
+                 gameContainer.classList.remove('invincible-mode');
+                 player.classList.remove('invincible');
+             }
+             // If cancelling because of Bear or Log, cancel Slowdown
+             if (except === 'bear' || except === 'invincible') {
+                 isSlowed = false;
+                 slowdownEndTime = 0;
+             }
+             // If cancelling because of Log or Slowdown, cancel Bear mode
+             if (except === 'invincible' || except === 'slowdown') {
+                 if (isBearMode) { // Only revert if ending bear mode specifically
+                     revertFromFish();
+                 }
+                 isBearMode = false;
+                 bearModeEndTime = 0;
+                 player.textContent = '🦫';
+                 // Ensure invincible class is removed if bear mode ends and not starting log invincibility
+                 if (except !== 'invincible') player.classList.remove('invincible');
+             }
+         }
+
 
         // --- Game Logic ---
         function startGame() {
@@ -724,19 +867,15 @@
             playerVelocityY = 0;
             jumpsRemaining = MAX_JUMPS;
             isGameOver = false;
-            isBoosting = false;
-            isInvincible = false; // Reset invincibility
+            cancelAllPowerups(); // Reset all powerup states
             tapCount = 0;
             lastTapTime = 0;
             gameSpeed = INITIAL_GAME_SPEED;
-            // Reset overlay and container class
-            invincibleOverlay.style.opacity = 0;
-            gameContainer.classList.remove('invincible-mode');
 
             obstacles.forEach(obs => obs.element.remove());
             obstacles = [];
             collectibles.forEach(col => col.element.remove());
-            collectibles = []; // Clear crowns and logs
+            collectibles = []; // Clear crowns, logs, bread, bears
 
             activeClouds.forEach(c => c.remove());
             activeClouds = [];
@@ -750,11 +889,9 @@
             }
             clearTimeout(sunSpawnTimeout);
             clearTimeout(sunCleanupTimeout);
-            if (boostParticleInterval) clearInterval(boostParticleInterval);
 
 
             particlesContainer.innerHTML = '';
-            player.classList.remove('boosting', 'invincible'); // Remove status classes
             player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
 
             startScreen.style.display = 'none';
@@ -793,15 +930,13 @@
 
         function endGame() {
             isGameOver = true;
-            isBoosting = false;
-            isInvincible = false; // Ensure invincibility ends
+            cancelAllPowerups(); // Reset all powerup states
             clearInterval(gameLoopInterval);
             clearInterval(scoreUpdateInterval);
             clearTimeout(spawnTimeout);
             clearTimeout(speedIncreaseTimeout);
             clearTimeout(cloudSpawnTimeout);
             clearTimeout(sunSpawnTimeout);
-            clearInterval(boostParticleInterval);
             gameContainer.removeEventListener('pointerdown', handleTapInput);
 
             saveHighScore();
@@ -809,11 +944,7 @@
 
             hud.style.display = 'none';
             gameOverScreen.style.display = 'flex';
-            player.classList.remove('boosting', 'invincible'); // Remove status classes
             player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
-            // Reset overlay and container class
-            invincibleOverlay.style.opacity = 0;
-            gameContainer.classList.remove('invincible-mode');
 
             // Pause all layers
             ground.style.animationPlayState = 'paused';
@@ -841,9 +972,9 @@
 
             // Check for Boost (only on 3rd tap in quick succession)
             if (tapCount === 3 && !isBoosting) {
+                cancelAllPowerups('boost'); // Cancel others, keep boost if already active (though check prevents it)
                 isBoosting = true;
                 boostEndTime = Date.now() + BOOST_DURATION;
-                // Class added in main loop based on isBoosting flag
 
                 if (boostParticleInterval) clearInterval(boostParticleInterval);
                 boostParticleInterval = setInterval(() => {
@@ -884,26 +1015,43 @@
             if (isGameOver) return;
 
             // --- Check Powerup End Times ---
-            let shouldRemoveInvincibleClass = false;
+            let shouldRevertFromBear = false;
             if (isBoosting && Date.now() > boostEndTime) {
                 isBoosting = false;
                 if (boostParticleInterval) clearInterval(boostParticleInterval);
             }
-            if (isInvincible && Date.now() > invincibilityEndTime) {
+            // Check Bear Mode End FIRST
+            if (isBearMode && Date.now() > bearModeEndTime) {
+                 isBearMode = false;
+                 isInvincible = false; // Bear mode ending also ends invincibility
+                 shouldRevertFromBear = true;
+                 player.textContent = '🦫'; // Revert player emoji
+                 invincibleOverlay.style.opacity = 0; // Fade out overlay
+                 gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
+                 revertFromFish(); // Change obstacles back
+            }
+            // Check regular Invincibility End (if not in bear mode)
+            else if (isInvincible && !isBearMode && Date.now() > invincibilityEndTime) {
                 isInvincible = false;
-                shouldRemoveInvincibleClass = true; // Flag to remove class later
                 invincibleOverlay.style.opacity = 0; // Fade out overlay
                 gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
             }
+            if (isSlowed && Date.now() > slowdownEndTime) {
+                 isSlowed = false;
+            }
 
             // --- Determine Effective Speed ---
-             // If invincible, use invincible speed. If only boosting, use boost speed.
+             // Priority: Boost > Log Invincibility > Slowdown > Normal
+             // Bear Mode uses normal speed unless boosting
              let currentSpeedMultiplier = 1.0;
-             if (isInvincible) {
-                 currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
-             } else if (isBoosting) {
+             if (isBoosting) {
                  currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER;
+             } else if (isInvincible && !isBearMode) { // Only Log invincibility affects speed now
+                 currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
+             } else if (isSlowed) { // Slowdown applies only if not boosting or Log invincible
+                 currentSpeedMultiplier = SLOWDOWN_MULTIPLIER;
              }
+             // Bear mode itself doesn't change multiplier here
              const currentScrollSpeed = gameSpeed * currentSpeedMultiplier;
 
 
@@ -929,15 +1077,16 @@
             }
 
             // Apply transform and manage classes based on state
-            let scaleValue = isInvincible ? 2 : 1; // Use 2x scale when invincible
+            let scaleValue = (isInvincible || isBearMode) ? 2 : 1; // Use 2x scale when invincible or bear
             let rotationValue = isBoosting ? -10 : 0; // degrees
             player.style.transform = `translateY(${playerY}px) scale(${scaleValue}) scaleX(-1) rotate(${rotationValue}deg)`;
 
             // Manage classes based on state (ensures correct visuals are applied/removed)
-            if (isInvincible) player.classList.add('invincible'); else player.classList.remove('invincible');
+            // Invincible class handles glow/size for both log and bear powerups
+            if (isInvincible || isBearMode) player.classList.add('invincible'); else player.classList.remove('invincible');
             if (isBoosting) player.classList.add('boosting'); else player.classList.remove('boosting');
             // Explicitly remove class if invincibility just ended
-            if(shouldRemoveInvincibleClass) player.classList.remove('invincible');
+            if(shouldRevertFromBear) player.classList.remove('invincible');
 
 
             // 2. Move Obstacles & Check Collision
@@ -949,18 +1098,26 @@
                 const obstacleRect = obstacle.element.getBoundingClientRect();
 
                 if (checkCollision(playerRect, obstacleRect)) {
-                    if (isInvincible) {
+                    if (isBearMode) {
+                         // Bear Mode: Destroy fish, get points
+                         score += BEAR_MODE_POINTS;
+                         updateHUD();
+                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${BEAR_MODE_POINTS}`, 'bear');
+                         obstaclesToRemove.push(index);
+                         obstacle.element.remove();
+                    }
+                    else if (isInvincible) { // Log Invincibility
                          // Invincible: Destroy obstacle, get points
                          score += INVINCIBILITY_POINTS;
                          updateHUD();
-                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INVINCIBILITY_POINTS}`, 'powerup'); // Indicate powerup score
+                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INVINCIBILITY_POINTS}`, 'powerup');
                          obstaclesToRemove.push(index);
                          obstacle.element.remove();
                     } else if (obstacle.isInsect) {
                         // Not Invincible: Squish Insect
                         score += INSECT_SQUISH_POINTS;
                         updateHUD();
-                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INSECT_SQUISH_POINTS}`, 'insect'); // Indicate insect score
+                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INSECT_SQUISH_POINTS}`, 'insect');
                         obstaclesToRemove.push(index);
                         obstacle.element.remove();
                     } else {
@@ -983,33 +1140,81 @@
              // If game ended in the loop above, stop here
              if (isGameOver) return;
 
-            // 3. Move Collectibles & Check Collision (Crowns and Logs)
+            // 3. Move Collectibles & Check Collision (Crowns, Logs, Bread, Bears)
             const collectiblesToRemove = [];
             collectibles.forEach((item, index) => {
                 item.x -= currentScrollSpeed; // Use effective speed
-                item.element.style.left = `${item.x}px`;
-                const itemRect = item.element.getBoundingClientRect();
-                if (checkCollision(playerRect, itemRect)) {
-                    if (item.isCrown) {
-                        score += CROWN_POINTS;
-                        updateHUD();
-                        createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top);
-                    } else if (item.isLog) {
-                         if (!isInvincible) { // Prevent re-triggering during active invincibility
-                            isInvincible = true;
-                            invincibilityEndTime = Date.now() + INVINCIBILITY_DURATION;
-                            invincibleOverlay.style.opacity = 0.4; // Fade in overlay tint (adjust opacity 0.0 to 1.0)
-                            gameContainer.classList.add('invincible-mode'); // Add border pulse class
-                            createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
-                         }
+                // If in bear mode, collectibles also move (and are fish)
+                if (isBearMode && !item.isBear) { // Check it's not the triggering bear
+                     item.element.style.left = `${item.x}px`;
+                     const itemRect = item.element.getBoundingClientRect();
+                     if (checkCollision(playerRect, itemRect)) {
+                         // Hit a transformed collectible (fish)
+                         score += BEAR_MODE_POINTS;
+                         updateHUD();
+                         createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${BEAR_MODE_POINTS}`, 'bear');
+                         collectiblesToRemove.push(index);
+                         item.element.remove();
+                     } else if (item.x + itemRect.width < 0) {
+                         collectiblesToRemove.push(index);
+                         item.element.remove();
+                     }
+                }
+                // Handle normal collectible collision if not in bear mode
+                else if (!isBearMode) {
+                    item.element.style.left = `${item.x}px`;
+                    const itemRect = item.element.getBoundingClientRect();
+                    if (checkCollision(playerRect, itemRect)) {
+                        // --- Power-up Activation & Priority ---
+                        let collected = true; // Assume collected unless ignored
+                        if (item.isLog) {
+                             cancelAllPowerups('invincible'); // Cancel others, keep invincible visuals if already on
+                             isInvincible = true;
+                             invincibilityEndTime = Date.now() + INVINCIBILITY_DURATION;
+                             invincibleOverlay.style.opacity = 0.4;
+                             gameContainer.classList.add('invincible-mode');
+                             createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
+                        } else if (item.isBread) {
+                             cancelAllPowerups('slowdown'); // Cancel others
+                             isSlowed = true;
+                             slowdownEndTime = Date.now() + SLOWDOWN_DURATION;
+                             createParticle('slowdown-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'Loaf of bread!');
+                        } else if (item.isBear) {
+                             cancelAllPowerups('bear'); // Cancel others
+                             isBearMode = true;
+                             isInvincible = true; // Bear mode grants invincibility
+                             bearModeEndTime = Date.now() + BEAR_MODE_DURATION;
+                             invincibilityEndTime = bearModeEndTime; // Sync end times
+                             player.textContent = BEAR_MODE_PLAYER_EMOJI;
+                             invincibleOverlay.style.opacity = 0.4; // Use overlay for consistency
+                             gameContainer.classList.add('invincible-mode'); // Use border pulse
+                             transformToFish(); // Change existing items
+                             createParticle('bear-mode-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'If you gotta eat...eat!');
+                        } else if (item.isCrown) {
+                             // Just collect crown, doesn't cancel other powerups
+                            score += CROWN_POINTS;
+                            updateHUD();
+                            createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top);
+                        } else {
+                            collected = false; // Should not happen, but safety check
+                        }
+                        // Remove the collected item
+                        if (collected) {
+                            collectiblesToRemove.push(index);
+                            item.element.remove();
+                        }
                     }
-                    collectiblesToRemove.push(index);
-                    item.element.remove();
+                    else if (item.x + itemRect.width < 0) { // Item off-screen
+                        collectiblesToRemove.push(index);
+                        item.element.remove();
+                    }
                 }
-                else if (item.x + itemRect.width < 0) {
-                    collectiblesToRemove.push(index);
-                    item.element.remove();
-                }
+                 // If in bear mode and item is off screen
+                 else if (isBearMode && item.x + item.element.getBoundingClientRect().width < 0) {
+                     collectiblesToRemove.push(index);
+                     item.element.remove();
+                 }
+
             });
             for (let i = collectiblesToRemove.length - 1; i >= 0; i--) {
                 collectibles.splice(collectiblesToRemove[i], 1);
@@ -1024,83 +1229,97 @@
             let element;
             let isFlying = false;
             let spawnType = 'obstacle'; // Default
+            let emojiChar = ''; // Hold the final emoji
+            let originalEmoji = ''; // Store original for bear mode revert
 
-            // Decide object type: Log > Crown > Obstacle
+            // Decide object type: Bear > Bread > Log > Crown > Obstacle
             const randomType = Math.random();
-            if (randomType < LOG_SPAWN_CHANCE) {
+            // *** Using Final Spawn Frequencies ***
+            if (randomType < BEAR_SPAWN_CHANCE) { // Bear (3%)
+                 spawnType = 'bear';
+                 emojiChar = BEAR_EMOJI;
+            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE) { // Bread (next 3% = 6% total)
+                 spawnType = 'bread';
+                 emojiChar = BREAD_EMOJI;
+            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE + LOG_SPAWN_CHANCE) { // Log (next 4% = 10% total)
                  spawnType = 'log';
-            } else if (randomType < LOG_SPAWN_CHANCE + CROWN_SPAWN_CHANCE) {
+                 emojiChar = LOG_EMOJI;
+            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE + LOG_SPAWN_CHANCE + CROWN_SPAWN_CHANCE) { // Crown (next 5% = 15% total)
                  spawnType = 'crown';
-            }
+                 emojiChar = CROWN_EMOJI;
+            } // Obstacle is the remaining 85%
 
-            // --- Spawn based on type ---
-            if (spawnType === 'log') {
+            // --- Create element based on type ---
+            if (spawnType !== 'obstacle') {
                  element = document.createElement('div');
-                 element.classList.add('powerup-log');
-                 element.textContent = LOG_EMOJI;
-                 isFlying = false; // Logs are always on ground
-                 collectibles.push({ element: element, x: initialX, isLog: true });
+                 originalEmoji = emojiChar; // Store original for collectibles too
 
-            } else if (spawnType === 'crown') {
-                 element = document.createElement('div');
-                 element.classList.add('collectible');
-                 element.textContent = CROWN_EMOJI;
-                 isFlying = Math.random() < 0.5; // Crowns can fly
-                 collectibles.push({ element: element, x: initialX, isCrown: true });
-
+                 if (spawnType === 'bear') {
+                     element.classList.add('powerup-bear');
+                     isFlying = false; // Bear always on ground
+                     collectibles.push({ element, x: initialX, isBear: true, originalEmoji });
+                 } else if (spawnType === 'bread') {
+                     element.classList.add('powerup-bread');
+                     isFlying = false; // Bread always on ground
+                     collectibles.push({ element, x: initialX, isBread: true, originalEmoji });
+                 } else if (spawnType === 'log') {
+                     element.classList.add('powerup-log');
+                     isFlying = false; // Log always on ground
+                     collectibles.push({ element, x: initialX, isLog: true, originalEmoji });
+                 } else if (spawnType === 'crown') {
+                     element.classList.add('collectible');
+                     isFlying = Math.random() < 0.5; // Crowns can fly
+                     collectibles.push({ element, x: initialX, isCrown: true, originalEmoji });
+                 }
             } else { // Spawn Obstacle
                  isFlying = Math.random() < FLYING_OBSTACLE_CHANCE;
-                 let emojiChar = '';
                  let isInsect = false;
                  let isFatal = false;
 
                  if (isFlying) {
-                     // Flying obstacles are always insects
                      const potentialEmojis = insectEmojis.filter(e => flyingInsectEmojis.includes(e));
                      emojiChar = potentialEmojis.length > 0 ? getRandomElement(potentialEmojis) : getRandomElement(insectEmojis);
-                     isInsect = true;
-                     isFatal = false;
+                     isInsect = true; isFatal = false;
                  } else {
-                     // Ground obstacles: insect or animal
                      if (Math.random() < 0.4) { // Ground insect
                          emojiChar = getRandomElement(insectEmojis.filter(e => !flyingInsectEmojis.includes(e)));
-                         isInsect = true;
-                         isFatal = false;
+                         isInsect = true; isFatal = false;
                      } else { // Ground animal
                          emojiChar = getRandomElement(animalEmojis);
-                         isInsect = false;
-                         isFatal = true;
+                         isInsect = false; isFatal = true;
                      }
                  }
+                 originalEmoji = emojiChar; // Store original for obstacles too
 
                  element = document.createElement('div');
                  element.classList.add('obstacle');
-                 if (isInsect) {
-                     element.classList.add('insect');
-                 }
-                 element.textContent = emojiChar;
+                 if (isInsect) element.classList.add('insect');
 
-                 obstacles.push({
-                     element: element,
-                     x: initialX,
-                     isInsect: isInsect,
-                     isFatal: isFatal,
-                     isFlying: isFlying
-                 });
+                 obstacles.push({ element, x: initialX, isInsect, isFatal, isFlying, originalEmoji });
             }
 
-            // --- Set position ---
-            if (isFlying) { // Only applies to crowns and flying obstacles
+            // --- Set position and final appearance ---
+            if (isFlying) {
                 const bottomPos = getRandomInt(FLYING_OBSTACLE_BOTTOM_MIN, FLYING_OBSTACLE_BOTTOM_MAX);
                 element.style.bottom = `${bottomPos}%`;
-            } else { // Ground objects (logs, crowns, obstacles)
+            } else {
                 element.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
             }
             element.style.left = `${initialX}px`;
+
+            // *** Check if Bear Mode is active DURING spawn ***
+            if (isBearMode) {
+                element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                element.classList.add('turned-fish');
+            } else {
+                 element.textContent = originalEmoji; // Ensure correct emoji if not in bear mode
+            }
+
             gameContainer.insertBefore(element, particlesContainer);
 
             scheduleNextSpawn();
         }
+
 
 
         function scheduleNextSpawn() {
