@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Beaver Bash! - Retro Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* === RETRO STYLES START (Adapted) === */
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            font-family: 'Press Start 2P', monospace;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
+            image-rendering: pixelated;
+            user-select: none; -webkit-user-select: none; -ms-user-select: none;
+        }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #000000; /* Black background */
+        }
+        /* Optional: Scanline Overlay */
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100% 3px;
+            pointer-events: none; z-index: 1000; opacity: 0.5; /* Ensure overlay is on top */
+        }
+
+        /* Game Container */
+        #game-container {
+            position: relative; width: 100%; height: 100%;
+            overflow: hidden;
+            touch-action: manipulation;
+            background-color: #44AAFF; /* Default Sky blue background */
+            border: 5px solid #555;
+            /* transition removed */
+        }
+        /* Style for pulsing border during invincibility */
+        #game-container.invincible-mode {
+             animation: borderPulse 0.5s infinite alternate;
+        }
+        @keyframes borderPulse {
+             0% { border-color: #555; }
+             100% { border-color: cyan; box-shadow: 0 0 10px cyan; }
+        }
+
+
+        /* Heads-Up Display (HUD) */
+        #hud {
+            position: absolute; top: 10px; left: 10px;
+            background-color: #222222; color: #00ff00;
+            padding: 8px 15px; border: 2px solid #555555;
+            font-size: 1em; z-index: 500; /* Above game elements */
+            text-shadow: 1px 1px 0px #008000;
+        }
+
+        /* Screens (Start/Game Over) */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background-color: rgba(0, 0, 0, 0.85); color: #ffffff;
+            text-align: center; z-index: 600; /* Above HUD */
+            padding: 20px;
+        }
+        /* Default screen heading style */
+        .screen h1 {
+            font-size: 2.5em; margin-bottom: 25px; color: #ffff00; /* Yellow */
+            text-shadow: 3px 3px 0px #ff8c00; /* Orange shadow */
+         }
+        .screen p { font-size: 1.2em; margin-bottom: 18px; color: #00ffff; line-height: 1.5; max-width: 80%; }
+        /* Simplified instructions style */
+        .screen p.instructions {
+             font-size: 1.0em; /* Slightly smaller */
+             line-height: 1.8; /* More spacing */
+             max-width: 90%;
+             color: #ffffff; /* White for better contrast */
+             margin-bottom: 30px;
+        }
+        .screen p.instructions strong {
+             color: #ffff00; /* Highlight action words */
+             display: block; /* Put actions on new lines */
+             margin-top: 5px;
+             margin-bottom: 2px;
+        }
+
+        .screen p.stats { margin-bottom: 15px; font-size: 1.4em; color: #00ff00; }
+        .screen p.high-score-label { margin-bottom: 25px; font-size: 1.0em; color: #cccccc; }
+        .screen button {
+            padding: 12px 25px; font-size: 1.3em; cursor: pointer;
+            background-color: #0000ff; color: white; border: 2px solid #ffffff;
+            box-shadow: 4px 4px 0px #00008b;
+        }
+        .screen button:active { background-color: #4444ff; transform: translate(2px, 2px); box-shadow: 2px 2px 0px #00008b; }
+        #game-over-screen { display: none; }
+
+
+        /* Player (Beaver) */
+        #player {
+            position: absolute;
+            bottom: 10%; left: 15%;
+            font-size: 40px; z-index: 50;
+            transition: transform 0.1s linear, filter 0.2s ease-in-out;
+            transform: scaleX(-1); /* Base state: flipped */
+            transform-origin: bottom center;
+        }
+        /* Style for when boosting */
+        #player.boosting {
+             transform: scaleX(-1) rotate(-10deg);
+        }
+         /* Style for when invincible */
+         #player.invincible {
+             transform: scale(2) scaleX(-1);
+             animation: rainbowGlow 0.7s linear infinite;
+             filter: none;
+         }
+         /* Combine boosting and invincible styles */
+         #player.boosting.invincible {
+              transform: scale(2) scaleX(-1) rotate(-10deg);
+              animation: rainbowGlow 0.7s linear infinite;
+              filter: none;
+         }
+
+         /* Rainbow Glow Animation */
+         @keyframes rainbowGlow {
+             0%   { filter: drop-shadow(0 0 12px hsl(0, 100%, 60%)); }
+             16%  { filter: drop-shadow(0 0 12px hsl(60, 100%, 60%)); }
+             33%  { filter: drop-shadow(0 0 12px hsl(120, 100%, 60%)); }
+             50%  { filter: drop-shadow(0 0 12px hsl(180, 100%, 60%)); }
+             66%  { filter: drop-shadow(0 0 12px hsl(240, 100%, 60%)); }
+             83%  { filter: drop-shadow(0 0 12px hsl(300, 100%, 60%)); }
+             100% { filter: drop-shadow(0 0 12px hsl(360, 100%, 60%)); }
+         }
+
+
+        /* Obstacles & Collectibles */
+        .obstacle, .collectible, .powerup-log { /* Added powerup-log */
+            position: absolute;
+            /* bottom is set by JS */
+            font-size: 35px;
+            /* Movement handled by JS */
+            will-change: transform; /* Optimize movement */
+        }
+        .obstacle { z-index: 45; }
+        .collectible { /* Crown */
+            z-index: 46;
+            filter: drop-shadow(0 0 5px gold);
+        }
+         .powerup-log { /* Log */
+             z-index: 46; /* Same level as crown */
+             filter: drop-shadow(0 0 6px #A0522D); /* Brownish glow */
+             animation: pulse 1.2s infinite alternate; /* Subtle pulse */
+         }
+        .obstacle.insect {
+             /* Insects are now squishable, no special visual needed unless desired */
+        }
+
+         @keyframes pulse {
+             0% { transform: scale(1); }
+             100% { transform: scale(1.05); }
+         }
+
+
+        /* --- Parallax Background --- */
+        .parallax-bg {
+            position: absolute;
+            left: 0;
+            width: 200%;
+            background-repeat: repeat-x;
+            z-index: 1;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+        #far-background {
+            background: linear-gradient(to top, #44AAFF 10%, #66CCFF 30%, #88EEFF 70%);
+            height: 100%;
+            bottom: 0;
+            z-index: 5;
+            animation: scrollFar 40s linear infinite;
+        }
+        /* Invincibility Overlay */
+        #invincible-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #DA70D6; /* Orchid */
+            opacity: 0; /* Hidden by default */
+            z-index: 4; /* Below sky */
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out; /* Fade effect */
+        }
+        #mid-background { /* Hills - Now Solid Color */
+             background-color: #3CB371;
+             background-position: bottom left;
+             height: 20%;
+             bottom: 10%;
+             z-index: 10;
+             animation: scrollMid 15s linear infinite;
+        }
+         /* Tree Layer - Positioned in Sky */
+         #tree-layer {
+            height: 30%;
+            bottom: 30%;
+            z-index: 20; /* In front of clouds */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='95' font-size='90'%3E🌳%3C/text%3E%3C/svg%3E");
+            background-size: 250px 80%;
+            background-position: 0% 100%;
+            background-repeat: repeat-x;
+            animation: scrollTrees 12s linear infinite;
+         }
+        #ground {
+            height: 10%;
+            bottom: 0;
+            background: linear-gradient(to bottom, #8B4513 50%, #A0522D 50%);
+            background-size: 50px 100%;
+            z-index: 40; /* In front of trees */
+            animation: scrollGround 2s linear infinite;
+        }
+
+        @keyframes scrollFar { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes scrollMid { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } /* Used by hills */
+        @keyframes scrollTrees { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes scrollGround { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* --- Clouds --- */
+        #clouds {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 70%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 15; /* Behind trees */
+        }
+        .cloud {
+            position: absolute;
+            font-size: 120px;
+            color: white;
+            opacity: 0.6;
+            animation: driftReverse 60s linear infinite; /* Faster base duration */
+            will-change: transform;
+            transform-origin: center center;
+            backface-visibility: hidden;
+        }
+        .cloud:nth-child(2n) { animation-duration: 75s; opacity: 0.5; font-size: 100px; }
+        .cloud:nth-child(3n) { animation-duration: 50s; opacity: 0.7; font-size: 140px; }
+
+        @keyframes driftReverse {
+            0% { transform: translateX(calc(100vw + 150px)) scale(var(--cloud-scale, 1)); } /* Start Right */
+            100% { transform: translateX(-150px) scale(var(--cloud-scale, 1)); } /* End Left */
+        }
+
+        /* --- Sun --- */
+        .sun {
+            position: absolute;
+            top: 2%;
+            font-size: 56vh;
+            color: #FFD700;
+            text-shadow: 0 0 30px orange;
+            z-index: 12; /* Behind clouds(15) & trees(20), above hills(10) */
+            pointer-events: none;
+            animation: scrollSun linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        @keyframes scrollSun {
+             0% { transform: translateX(calc(100vw + 100px)); } /* Start far right */
+            100% { transform: translateX(-300px); } /* End further left due to size */
+        }
+
+
+        /* --- Particles --- */
+        #particles {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 55; /* Above player */
+        }
+        .particle {
+            position: absolute;
+            font-size: 15px;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+        .particle.jump-star {
+             font-size: 20px;
+             color: #FFD700; /* Gold */
+             animation: burstUp 0.5s ease-out forwards;
+             text-shadow: 0 0 3px black; /* Make star pop */
+        }
+        .particle.land-smoke {
+             font-size: 25px;
+             color: #AAAAAA; /* Light gray */
+             animation: puffOut 0.7s ease-out forwards;
+             transform: scaleX(-1); /* Flip the smoke emoji */
+        }
+        .particle.score-popup {
+            font-size: 18px;
+            color: #FFFF00; /* Bright Yellow */
+            font-weight: bold;
+            text-shadow: 1px 1px 0px #FF8C00; /* Orange shadow */
+            animation: scoreFadeUp 0.8s ease-out forwards;
+        }
+        .particle.score-popup.insect-score {
+             color: #00FF00; /* Green for insect points */
+             text-shadow: 1px 1px 0px #008000; /* Dark Green shadow */
+        }
+         /* Style for powerup score */
+         .particle.score-popup.powerup-score {
+             color: #00FFFF; /* Cyan for powerup points */
+             text-shadow: 1px 1px 0px #008B8B; /* Dark Cyan shadow */
+         }
+         /* Style for powerup activation text */
+         .particle.powerup-text {
+             font-size: 20px;
+             color: #00FFFF; /* Cyan */
+             font-weight: bold;
+             text-shadow: 1px 1px 0px #008B8B, 0 0 5px white;
+             animation: scoreFadeUp 1.2s ease-out forwards; /* Lasts longer */
+         }
+        /* Boost particle style */
+        .particle.boost-smoke {
+             font-size: 18px;
+             color: #D3D3D3; /* Lighter Gray */
+             opacity: 0.7;
+             animation: fadeOutQuick 0.3s linear forwards;
+             /* Match player flip */
+             transform: scaleX(-1);
+        }
+
+        @keyframes fadeOutQuick {
+            0% { opacity: 0.7; transform: scale(1) scaleX(-1); }
+            100% { opacity: 0; transform: scale(0.5) scaleX(-1); }
+        }
+        @keyframes fadeOutUp { /* Default particle animation */
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-30px) scale(0.5); }
+        }
+        @keyframes burstUp { /* Jump star animation */
+            0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
+            50% { opacity: 0.8; transform: translateY(-40px) scale(1.2) rotate(180deg); }
+            100% { opacity: 0; transform: translateY(-60px) scale(0.5) rotate(360deg); }
+        }
+         @keyframes puffOut { /* Landing smoke animation */
+            0% { opacity: 0.6; transform: translateY(0) scale(0.3) scaleX(-1); } /* Keep flipped */
+            100% { opacity: 0; transform: translateY(5px) scale(1.5) scaleX(-1); } /* Keep flipped */
+        }
+         @keyframes scoreFadeUp { /* Score popup animation */
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 600px) {
+             #hud { font-size: 0.9em; padding: 6px 10px; }
+             .screen h1 { font-size: 1.8em; }
+             /* Removed specific game over h1 size, inherits .screen h1 now */
+             .screen p { font-size: 1.0em; }
+              .screen p.instructions { font-size: 0.9em; line-height: 1.7; }
+             .screen p.stats { font-size: 1.2em; }
+             .screen p.high-score-label { font-size: 0.9em; }
+             .screen button { padding: 10px 20px; font-size: 1.1em; }
+             #player { font-size: 35px; left: 10%; }
+             .obstacle, .collectible, .powerup-log { font-size: 30px; }
+             #ground { height: 8%; } /* Adjust ground height */
+             #player { bottom: 8%; } /* Match ground height */
+             #mid-background { height: 22%; bottom: 8%; } /* Adjust hills for new ground height */
+             #tree-layer {
+                height: 25%;
+                bottom: 30%; /* Start above hills (8% ground + 22% hills) */
+                background-size: 180px 80%;
+                background-position: 0% 100%;
+             }
+             /* Adjust cloud speeds for mobile if needed, but they inherit faster speed */
+             .cloud { font-size: 80px; }
+             .cloud:nth-child(2n) { font-size: 70px; }
+             .cloud:nth-child(3n) { font-size: 90px; }
+             /* Adjust sun size/pos for mobile */
+             .sun {
+                 font-size: 46vh;
+                 top: 1%;
+             }
+             .particle { font-size: 12px; }
+             .particle.jump-star { font-size: 16px; }
+             .particle.land-smoke { font-size: 20px; }
+             .particle.score-popup { font-size: 16px; }
+             .particle.powerup-text { font-size: 18px; }
+             .particle.boost-smoke { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="far-background" class="parallax-bg"></div>
+        <div id="invincible-overlay"></div>
+        <div id="clouds"></div>
+        <div id="tree-layer" class="parallax-bg"></div>
+        <div id="mid-background" class="parallax-bg"></div>
+        <div id="ground" class="parallax-bg"></div>
+
+        <div id="hud" style="display: none;">
+            <span>Score: <span id="score">0</span></span>
+        </div>
+        <div id="player">🦫</div>
+        <div id="particles"></div>
+
+        <div id="start-screen" class="screen">
+            <h1>Beaver Bash!</h1>
+            <p class="instructions">
+                 <strong>Tap Controls:</strong>
+                 Single: Jump<br>
+                 Double: Dbl Jump<br>
+                 Triple: BOOST! 🚀<br>
+                 <strong>Gameplay:</strong>
+                 Squish Insects (+25)<br>
+                 Collect Items<br>
+                 Avoid Animals!
+             </p>
+            <button id="start-button">Start Running</button>
+        </div>
+        <div id="game-over-screen" class="screen">
+             <h1>Squished!</h1>
+            <p class="stats">Final Score: <span id="final-score">0</span></p>
+            <p class="high-score-label">High Score: <span id="high-score">0</span></p>
+            <button id="play-again-button">Run Again</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const ground = document.getElementById('ground');
+        const farBackground = document.getElementById('far-background');
+        const midBackground = document.getElementById('mid-background');
+        const treeLayer = document.getElementById('tree-layer');
+        const cloudsContainer = document.getElementById('clouds');
+        // Removed sunContainer selector
+        const invincibleOverlay = document.getElementById('invincible-overlay'); // Added overlay selector
+        const particlesContainer = document.getElementById('particles');
+        const hud = document.getElementById('hud');
+        const scoreDisplay = document.getElementById('score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startButton = document.getElementById('start-button');
+        const playAgainButton = document.getElementById('play-again-button');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const highScoreDisplay = document.getElementById('high-score');
+
+        // Game Settings & State
+        const HIGH_SCORE_KEY = 'beaverBashHighScore'; // Changed key for new name
+        const DEFAULT_SKY_COLOR = '#44AAFF'; // Store default sky color (still needed?)
+        const INVINCIBLE_SKY_COLOR = '#DA70D6'; // Orchid color for invincibility overlay
+        const INITIAL_GAME_SPEED = 4;
+        const SPEED_INCREASE_INTERVAL = 8000;
+        const SPEED_INCREMENT = 0.4;
+        const MAX_GAME_SPEED = 12;
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = -11;
+        const DOUBLE_JUMP_FORCE = -9;
+        const MAX_JUMPS = 2;
+        let GROUND_HEIGHT_PERCENT = 10; // Default, updated on load/resize
+        const PLAYER_BOTTOM_POS_PERCENT = GROUND_HEIGHT_PERCENT; // Player sits on ground
+        const OBSTACLE_SPAWN_MIN_INTERVAL = 800;
+        const OBSTACLE_SPAWN_MAX_INTERVAL = 1800;
+        const FLYING_OBSTACLE_CHANCE = 0.35;
+        const FLYING_OBSTACLE_BOTTOM_MIN = 20;
+        const FLYING_OBSTACLE_BOTTOM_MAX = 35;
+        const CLOUD_SPAWN_INTERVAL = 5500;
+        const MAX_CLOUDS = 6;
+        const INITIAL_CLOUD_COUNT = 3;
+        const CLOUD_BASE_ANIMATION_DURATION = 60; // Match CSS base duration
+        const INITIAL_SUN_SPAWN_MIN = 100;  // 0.1s
+        const INITIAL_SUN_SPAWN_MAX = 100;  // 0.1s
+        const SUN_SPAWN_INTERVAL_MIN = 30000; // Min time between subsequent suns (30s)
+        const SUN_SPAWN_INTERVAL_MAX = 60000; // Max time between subsequent suns (60s)
+        const SUN_ANIMATION_DURATION = 80; // Seconds for sun scroll (was 150)
+        const CROWN_EMOJI = '👑';
+        const CROWN_POINTS = 50;
+        const INSECT_SQUISH_POINTS = 25;
+        const CROWN_SPAWN_CHANCE = 0.12;
+        const LOG_EMOJI = '🪵'; // Log powerup
+        const LOG_SPAWN_CHANCE = 0.06; // Chance for log instead of obstacle/crown
+        const INVINCIBILITY_DURATION = 4000; // 4 seconds
+        const INVINCIBILITY_POINTS = 25; // Points per obstacle hit while invincible
+        // *** Faster scroll speed multiplier for invincibility ***
+        const INVINCIBILITY_SPEED_MULTIPLIER = 3.0;
+        const TRIPLE_TAP_WINDOW = 350; // ms window for taps
+        const BOOST_DURATION = 1500; // ms boost duration
+        const BOOST_SPEED_MULTIPLIER = 2.0; // How much faster boost makes obstacles seem
+        const BOOST_PARTICLE_INTERVAL = 50; // ms between boost particles
+
+        // Emojis
+        const insectEmojis = ['🦟', '🦋', '🐜', '🐛'];
+        const animalEmojis = ['🐍', '🐸', '🐟', '🐰', '🐿️', '🦎', '🐇', '🐢', '🦨'];
+        const flyingInsectEmojis = ['🦟', '🦋'];
+
+        // Game State Variables
+        let score = 0;
+        let highScore = 0;
+        let playerY = 0;
+        let playerVelocityY = 0;
+        let jumpsRemaining = MAX_JUMPS;
+        let isGameOver = true;
+        let gameSpeed = INITIAL_GAME_SPEED;
+        let obstacles = [];
+        let collectibles = []; // Holds crowns and logs
+        let activeClouds = [];
+        let activeSun = null; // Track the sun element
+        let gameLoopInterval = null;
+        let spawnTimeout = null;
+        let speedIncreaseTimeout = null;
+        let scoreUpdateInterval = null;
+        let cloudSpawnTimeout = null;
+        let sunSpawnTimeout = null; // Timeout for scheduling sun
+        let sunCleanupTimeout = null; // Timeout for removing sun
+        let lastLandTime = 0;
+        let lastTapTime = 0; // For triple tap detection
+        let tapCount = 0; // For triple tap detection
+        let isBoosting = false; // Boost state
+        let boostEndTime = 0; // When boost ends
+        let boostParticleInterval = null; // Interval for boost particles
+        let isInvincible = false; // Invincibility state
+        let invincibilityEndTime = 0; // When invincibility ends
+        // Removed originalSkyColor
+
+        // --- Helper Functions ---
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function updateHUD() { scoreDisplay.textContent = Math.floor(score); }
+        function saveHighScore() { if (Math.floor(score) > highScore) { highScore = Math.floor(score); localStorage.setItem(HIGH_SCORE_KEY, highScore); } highScoreDisplay.textContent = highScore; }
+        function loadHighScore() { const savedScore = localStorage.getItem(HIGH_SCORE_KEY); highScore = savedScore ? parseInt(savedScore, 10) : 0; highScoreDisplay.textContent = highScore; }
+
+        // --- Particle System ---
+        function createParticle(type, x, y, text = null, isSpecialScore = false) { // Renamed flag
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            let emoji = '';
+            let duration = 600;
+
+            switch(type) {
+                case 'jump':
+                    particle.classList.add('jump-star');
+                    emoji = '✨';
+                    duration = 500;
+                    break;
+                case 'land':
+                    particle.classList.add('land-smoke');
+                    emoji = '💨';
+                    x += getRandomInt(-10, 10);
+                    duration = 700;
+                    break;
+                case 'score':
+                    particle.classList.add('score-popup');
+                    if (isSpecialScore === 'insect') { // Check specific type
+                         particle.classList.add('insect-score');
+                         emoji = text || `+${INSECT_SQUISH_POINTS}`;
+                    } else if (isSpecialScore === 'powerup') {
+                         particle.classList.add('powerup-score');
+                         emoji = text || `+${INVINCIBILITY_POINTS}`;
+                    } else { // Default is crown score
+                         emoji = text || `+${CROWN_POINTS}`;
+                    }
+                    duration = 800;
+                    break;
+                 case 'boost':
+                     particle.classList.add('boost-smoke');
+                     emoji = '💨';
+                     x -= player.clientWidth / 2 + getRandomInt(0,10);
+                     y += getRandomInt(-5, 5);
+                     duration = 300;
+                     break;
+                 case 'powerup-activate': // Text for powerup activation
+                     particle.classList.add('powerup-text');
+                     emoji = text || 'INVINCIBLE!';
+                     duration = 1200;
+                     break;
+                default:
+                    emoji = '❓';
+            }
+            particle.textContent = emoji;
+            particle.style.left = `${x}px`;
+            particle.style.top = `${y}px`;
+            particlesContainer.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, duration);
+        }
+
+        // --- Cloud System ---
+        function spawnCloud(isInitial = false) {
+            if (!isInitial && (isGameOver || activeClouds.length >= MAX_CLOUDS)) return;
+
+            const cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+            cloud.textContent = '☁️';
+
+            const cloudY = getRandomInt(5, 65);
+            const scale = (Math.random() * 0.4 + 0.8) * (isMobile() ? 0.8 : 1);
+            cloud.style.setProperty('--cloud-scale', scale);
+            cloud.style.top = `${cloudY}%`;
+
+            const baseAnimationDuration = CLOUD_BASE_ANIMATION_DURATION;
+
+            if (isInitial) {
+                const randomDelay = -Math.random() * baseAnimationDuration;
+                cloud.style.animationDelay = `${randomDelay}s`;
+            } else {
+                 cloud.style.animationDelay = '0s';
+            }
+
+            cloudsContainer.appendChild(cloud);
+            activeClouds.push(cloud);
+
+            const longestCloudDuration = 75; // From .cloud:nth-child(2n)
+            setTimeout(() => {
+                 if (cloud) cloud.remove();
+                 activeClouds = activeClouds.filter(c => c !== cloud);
+            }, (longestCloudDuration + 5) * 1000); // +5s buffer
+        }
+
+
+        function scheduleNextCloud() {
+             if (isGameOver) return;
+             const delay = CLOUD_SPAWN_INTERVAL + getRandomInt(-1500, 1500);
+             cloudSpawnTimeout = setTimeout(() => {
+                 spawnCloud();
+                 scheduleNextCloud();
+             }, delay);
+        }
+
+        // --- Sun System ---
+        function spawnSun() {
+            if (isGameOver || activeSun) return;
+            // console.log("Spawning sun!"); // Debugging
+
+            const sun = document.createElement('div');
+            sun.classList.add('sun');
+            sun.textContent = '☀️';
+            sun.style.animationDuration = `${SUN_ANIMATION_DURATION}s`;
+            sun.style.animationPlayState = 'running';
+
+            gameContainer.insertBefore(sun, cloudsContainer);
+            activeSun = sun;
+            // console.log("Sun element added:", activeSun); // Debugging
+
+            if(sunCleanupTimeout) clearTimeout(sunCleanupTimeout);
+            sunCleanupTimeout = setTimeout(() => {
+                // console.log("Cleaning up sun"); // Debugging
+                if (activeSun) {
+                    activeSun.remove();
+                    activeSun = null;
+                }
+                scheduleNextSun(false); // Schedule next regular sun
+            }, (SUN_ANIMATION_DURATION + 5) * 1000);
+        }
+
+        function scheduleNextSun(isInitial = false) {
+            if (isGameOver) return;
+            if (sunSpawnTimeout) clearTimeout(sunSpawnTimeout);
+            if (!activeSun) {
+                const minInterval = isInitial ? INITIAL_SUN_SPAWN_MIN : SUN_SPAWN_INTERVAL_MIN;
+                const maxInterval = isInitial ? INITIAL_SUN_SPAWN_MAX : SUN_SPAWN_INTERVAL_MAX;
+                const delay = getRandomInt(minInterval, maxInterval);
+                // console.log(`Scheduling ${isInitial ? 'initial' : 'next'} sun in ${delay / 1000}s`); // Debugging
+                sunSpawnTimeout = setTimeout(spawnSun, delay);
+            }
+        }
+
+        // --- Collision Detection ---
+        function checkCollision(playerRect, itemRect) {
+            // Adjust padding based on invincibility (larger hitbox when large)
+            const scaleFactor = isInvincible ? 2 : 1; // Use 2x scale factor
+            const baseWidth = player.clientWidth / scaleFactor; // Approx original width
+            const baseHeight = player.clientHeight / scaleFactor; // Approx original height
+            const paddingX = baseWidth * 0.2;
+            const paddingY = baseHeight * 0.15;
+
+             // Calculate player bounds based on scale and transform origin (bottom center)
+             const playerLeft = playerRect.left + (playerRect.width - baseWidth) / 2;
+             const playerRight = playerRect.right - (playerRect.width - baseWidth) / 2;
+             const playerTop = playerRect.top; // Scales upwards from bottom
+             const playerBottom = playerRect.bottom;
+
+
+            return (
+                playerLeft + paddingX < itemRect.right &&
+                playerRight - paddingX > itemRect.left &&
+                playerTop + paddingY < itemRect.bottom && // Check top edge collision
+                playerBottom - paddingY > itemRect.top // Check bottom edge collision
+            );
+        }
+
+        // --- Utility ---
+        function isMobile() {
+             return window.innerWidth <= 600;
+        }
+
+         // --- Update Ground Height Variable ---
+         function updateGroundHeight() {
+            const groundStyle = window.getComputedStyle(ground);
+            const heightStr = groundStyle.getPropertyValue('height');
+            if (heightStr.endsWith('%')) {
+                 GROUND_HEIGHT_PERCENT = parseFloat(heightStr) || 10;
+            } else if (heightStr.endsWith('px')) {
+                 const containerHeight = gameContainer.clientHeight;
+                 GROUND_HEIGHT_PERCENT = containerHeight > 0 ? (parseFloat(heightStr) / containerHeight) * 100 : 10;
+            } else {
+                 GROUND_HEIGHT_PERCENT = 10;
+            }
+             player.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
+         }
+
+
+        // --- Game Logic ---
+        function startGame() {
+            updateGroundHeight();
+            score = 0;
+            playerY = 0;
+            playerVelocityY = 0;
+            jumpsRemaining = MAX_JUMPS;
+            isGameOver = false;
+            isBoosting = false;
+            isInvincible = false; // Reset invincibility
+            tapCount = 0;
+            lastTapTime = 0;
+            gameSpeed = INITIAL_GAME_SPEED;
+            // Reset overlay and container class
+            invincibleOverlay.style.opacity = 0;
+            gameContainer.classList.remove('invincible-mode');
+
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles = [];
+            collectibles.forEach(col => col.element.remove());
+            collectibles = []; // Clear crowns and logs
+
+            activeClouds.forEach(c => c.remove());
+            activeClouds = [];
+            for (let i = 0; i < INITIAL_CLOUD_COUNT; i++) {
+                spawnCloud(true);
+            }
+            // Clear existing sun and timeouts
+            if (activeSun) {
+                activeSun.remove();
+                activeSun = null;
+            }
+            clearTimeout(sunSpawnTimeout);
+            clearTimeout(sunCleanupTimeout);
+            if (boostParticleInterval) clearInterval(boostParticleInterval);
+
+
+            particlesContainer.innerHTML = '';
+            player.classList.remove('boosting', 'invincible'); // Remove status classes
+            player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
+
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            hud.style.display = 'block';
+            updateHUD();
+
+            // Ensure all layers are running
+            ground.style.animationPlayState = 'running';
+            treeLayer.style.animationPlayState = 'running';
+            midBackground.style.animationPlayState = 'running';
+            farBackground.style.animationPlayState = 'running';
+            if (activeSun) activeSun.style.animationPlayState = 'running';
+
+            updateAnimationSpeeds();
+
+            if (gameLoopInterval) clearInterval(gameLoopInterval);
+            gameLoopInterval = setInterval(gameLoop, 1000 / 60);
+
+            if (scoreUpdateInterval) clearInterval(scoreUpdateInterval);
+            scoreUpdateInterval = setInterval(() => { if (!isGameOver) score += gameSpeed * 0.2; updateHUD(); }, 100);
+
+            if (spawnTimeout) clearTimeout(spawnTimeout);
+            scheduleNextSpawn();
+
+            if (speedIncreaseTimeout) clearTimeout(speedIncreaseTimeout);
+            scheduleSpeedIncrease();
+
+            if (cloudSpawnTimeout) clearTimeout(cloudSpawnTimeout);
+            scheduleNextCloud();
+
+            scheduleNextSun(true); // Start scheduling the INITIAL sun
+
+            gameContainer.addEventListener('pointerdown', handleTapInput); // Use updated listener
+        }
+
+        function endGame() {
+            isGameOver = true;
+            isBoosting = false;
+            isInvincible = false; // Ensure invincibility ends
+            clearInterval(gameLoopInterval);
+            clearInterval(scoreUpdateInterval);
+            clearTimeout(spawnTimeout);
+            clearTimeout(speedIncreaseTimeout);
+            clearTimeout(cloudSpawnTimeout);
+            clearTimeout(sunSpawnTimeout);
+            clearInterval(boostParticleInterval);
+            gameContainer.removeEventListener('pointerdown', handleTapInput);
+
+            saveHighScore();
+            finalScoreDisplay.textContent = Math.floor(score);
+
+            hud.style.display = 'none';
+            gameOverScreen.style.display = 'flex';
+            player.classList.remove('boosting', 'invincible'); // Remove status classes
+            player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
+            // Reset overlay and container class
+            invincibleOverlay.style.opacity = 0;
+            gameContainer.classList.remove('invincible-mode');
+
+            // Pause all layers
+            ground.style.animationPlayState = 'paused';
+            treeLayer.style.animationPlayState = 'paused';
+            midBackground.style.animationPlayState = 'paused';
+            farBackground.style.animationPlayState = 'paused';
+            if (activeSun) {
+                 activeSun.style.animationPlayState = 'paused';
+            }
+        }
+
+         // Tap Input Logic
+         function handleTapInput(event) {
+            if (isGameOver) return;
+
+            const now = Date.now();
+            const timeSinceLastTap = now - lastTapTime;
+
+            // Reset tap count ONLY if tap is too slow
+            if (timeSinceLastTap > TRIPLE_TAP_WINDOW) {
+                tapCount = 0;
+            }
+            tapCount++;
+            lastTapTime = now;
+
+            // Check for Boost (only on 3rd tap in quick succession)
+            if (tapCount === 3 && !isBoosting) {
+                isBoosting = true;
+                boostEndTime = Date.now() + BOOST_DURATION;
+                // Class added in main loop based on isBoosting flag
+
+                if (boostParticleInterval) clearInterval(boostParticleInterval);
+                boostParticleInterval = setInterval(() => {
+                    if (!isBoosting || isGameOver) {
+                        clearInterval(boostParticleInterval);
+                        return;
+                    }
+                    const playerRect = player.getBoundingClientRect();
+                    createParticle('boost', playerRect.left + playerRect.width * 0.1, playerRect.bottom - 5);
+                }, BOOST_PARTICLE_INTERVAL);
+
+                tapCount = 0; // Reset after boost attempt
+            }
+            // Handle Jump / Double Jump (if boost wasn't triggered on this tap)
+            else if (tapCount < 3 && jumpsRemaining > 0) {
+                let force = 0;
+                let isFirstAvailableJump = (jumpsRemaining === MAX_JUMPS);
+
+                if (isFirstAvailableJump && playerY >= -1) {
+                    force = JUMP_FORCE;
+                } else if (!isFirstAvailableJump && playerY < 0) {
+                    force = DOUBLE_JUMP_FORCE;
+                }
+
+                if (force !== 0) {
+                    playerVelocityY = force;
+                    jumpsRemaining--;
+                    createParticle('jump', player.getBoundingClientRect().left + player.clientWidth / 2, player.getBoundingClientRect().top + player.clientHeight / 2);
+                }
+            }
+             if (tapCount > 3) {
+                 tapCount = 0;
+             }
+        }
+
+
+        function gameLoop() {
+            if (isGameOver) return;
+
+            // --- Check Powerup End Times ---
+            let shouldRemoveInvincibleClass = false;
+            if (isBoosting && Date.now() > boostEndTime) {
+                isBoosting = false;
+                if (boostParticleInterval) clearInterval(boostParticleInterval);
+            }
+            if (isInvincible && Date.now() > invincibilityEndTime) {
+                isInvincible = false;
+                shouldRemoveInvincibleClass = true; // Flag to remove class later
+                invincibleOverlay.style.opacity = 0; // Fade out overlay
+                gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
+            }
+
+            // --- Determine Effective Speed ---
+             // If invincible, use invincible speed. If only boosting, use boost speed.
+             let currentSpeedMultiplier = 1.0;
+             if (isInvincible) {
+                 currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
+             } else if (isBoosting) {
+                 currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER;
+             }
+             const currentScrollSpeed = gameSpeed * currentSpeedMultiplier;
+
+
+            // 1. Player Physics
+            playerVelocityY += GRAVITY;
+            playerY += playerVelocityY;
+            let isOnGround = false;
+            if (playerY > 0) {
+                playerY = 0;
+                playerVelocityY = 0;
+                isOnGround = true;
+                if (jumpsRemaining < MAX_JUMPS) {
+                     jumpsRemaining = MAX_JUMPS;
+                     const now = Date.now();
+                     if (now - lastLandTime > 100) {
+                         const playerRect = player.getBoundingClientRect();
+                         createParticle('land', playerRect.left + playerRect.width / 2, playerRect.bottom - 10);
+                         lastLandTime = now;
+                     }
+                }
+                // Reset tap count when hitting ground
+                tapCount = 0;
+            }
+
+            // Apply transform and manage classes based on state
+            let scaleValue = isInvincible ? 2 : 1; // Use 2x scale when invincible
+            let rotationValue = isBoosting ? -10 : 0; // degrees
+            player.style.transform = `translateY(${playerY}px) scale(${scaleValue}) scaleX(-1) rotate(${rotationValue}deg)`;
+
+            // Manage classes based on state (ensures correct visuals are applied/removed)
+            if (isInvincible) player.classList.add('invincible'); else player.classList.remove('invincible');
+            if (isBoosting) player.classList.add('boosting'); else player.classList.remove('boosting');
+            // Explicitly remove class if invincibility just ended
+            if(shouldRemoveInvincibleClass) player.classList.remove('invincible');
+
+
+            // 2. Move Obstacles & Check Collision
+            const playerRect = player.getBoundingClientRect();
+            const obstaclesToRemove = [];
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= currentScrollSpeed; // Use effective speed
+                obstacle.element.style.left = `${obstacle.x}px`;
+                const obstacleRect = obstacle.element.getBoundingClientRect();
+
+                if (checkCollision(playerRect, obstacleRect)) {
+                    if (isInvincible) {
+                         // Invincible: Destroy obstacle, get points
+                         score += INVINCIBILITY_POINTS;
+                         updateHUD();
+                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INVINCIBILITY_POINTS}`, 'powerup'); // Indicate powerup score
+                         obstaclesToRemove.push(index);
+                         obstacle.element.remove();
+                    } else if (obstacle.isInsect) {
+                        // Not Invincible: Squish Insect
+                        score += INSECT_SQUISH_POINTS;
+                        updateHUD();
+                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${INSECT_SQUISH_POINTS}`, 'insect'); // Indicate insect score
+                        obstaclesToRemove.push(index);
+                        obstacle.element.remove();
+                    } else {
+                        // Not Invincible: Hit Fatal Animal
+                        endGame();
+                        return; // Stop processing this frame
+                    }
+                }
+                // Check if obstacle is off-screen
+                else if (obstacle.x + obstacleRect.width < 0) {
+                    obstaclesToRemove.push(index);
+                    obstacle.element.remove();
+                }
+            });
+            // Remove hit/off-screen obstacles
+            for (let i = obstaclesToRemove.length - 1; i >= 0; i--) {
+                obstacles.splice(obstaclesToRemove[i], 1);
+            }
+
+             // If game ended in the loop above, stop here
+             if (isGameOver) return;
+
+            // 3. Move Collectibles & Check Collision (Crowns and Logs)
+            const collectiblesToRemove = [];
+            collectibles.forEach((item, index) => {
+                item.x -= currentScrollSpeed; // Use effective speed
+                item.element.style.left = `${item.x}px`;
+                const itemRect = item.element.getBoundingClientRect();
+                if (checkCollision(playerRect, itemRect)) {
+                    if (item.isCrown) {
+                        score += CROWN_POINTS;
+                        updateHUD();
+                        createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top);
+                    } else if (item.isLog) {
+                         if (!isInvincible) { // Prevent re-triggering during active invincibility
+                            isInvincible = true;
+                            invincibilityEndTime = Date.now() + INVINCIBILITY_DURATION;
+                            invincibleOverlay.style.opacity = 0.4; // Fade in overlay tint (adjust opacity 0.0 to 1.0)
+                            gameContainer.classList.add('invincible-mode'); // Add border pulse class
+                            createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
+                         }
+                    }
+                    collectiblesToRemove.push(index);
+                    item.element.remove();
+                }
+                else if (item.x + itemRect.width < 0) {
+                    collectiblesToRemove.push(index);
+                    item.element.remove();
+                }
+            });
+            for (let i = collectiblesToRemove.length - 1; i >= 0; i--) {
+                collectibles.splice(collectiblesToRemove[i], 1);
+            }
+        }
+
+        // Combined Spawner
+        function spawnGameObject() {
+            if (isGameOver) return;
+            const gameWidth = gameContainer.clientWidth;
+            const initialX = gameWidth + 50;
+            let element;
+            let isFlying = false;
+            let spawnType = 'obstacle'; // Default
+
+            // Decide object type: Log > Crown > Obstacle
+            const randomType = Math.random();
+            if (randomType < LOG_SPAWN_CHANCE) {
+                 spawnType = 'log';
+            } else if (randomType < LOG_SPAWN_CHANCE + CROWN_SPAWN_CHANCE) {
+                 spawnType = 'crown';
+            }
+
+            // --- Spawn based on type ---
+            if (spawnType === 'log') {
+                 element = document.createElement('div');
+                 element.classList.add('powerup-log');
+                 element.textContent = LOG_EMOJI;
+                 isFlying = false; // Logs are always on ground
+                 collectibles.push({ element: element, x: initialX, isLog: true });
+
+            } else if (spawnType === 'crown') {
+                 element = document.createElement('div');
+                 element.classList.add('collectible');
+                 element.textContent = CROWN_EMOJI;
+                 isFlying = Math.random() < 0.5; // Crowns can fly
+                 collectibles.push({ element: element, x: initialX, isCrown: true });
+
+            } else { // Spawn Obstacle
+                 isFlying = Math.random() < FLYING_OBSTACLE_CHANCE;
+                 let emojiChar = '';
+                 let isInsect = false;
+                 let isFatal = false;
+
+                 if (isFlying) {
+                     // Flying obstacles are always insects
+                     const potentialEmojis = insectEmojis.filter(e => flyingInsectEmojis.includes(e));
+                     emojiChar = potentialEmojis.length > 0 ? getRandomElement(potentialEmojis) : getRandomElement(insectEmojis);
+                     isInsect = true;
+                     isFatal = false;
+                 } else {
+                     // Ground obstacles: insect or animal
+                     if (Math.random() < 0.4) { // Ground insect
+                         emojiChar = getRandomElement(insectEmojis.filter(e => !flyingInsectEmojis.includes(e)));
+                         isInsect = true;
+                         isFatal = false;
+                     } else { // Ground animal
+                         emojiChar = getRandomElement(animalEmojis);
+                         isInsect = false;
+                         isFatal = true;
+                     }
+                 }
+
+                 element = document.createElement('div');
+                 element.classList.add('obstacle');
+                 if (isInsect) {
+                     element.classList.add('insect');
+                 }
+                 element.textContent = emojiChar;
+
+                 obstacles.push({
+                     element: element,
+                     x: initialX,
+                     isInsect: isInsect,
+                     isFatal: isFatal,
+                     isFlying: isFlying
+                 });
+            }
+
+            // --- Set position ---
+            if (isFlying) { // Only applies to crowns and flying obstacles
+                const bottomPos = getRandomInt(FLYING_OBSTACLE_BOTTOM_MIN, FLYING_OBSTACLE_BOTTOM_MAX);
+                element.style.bottom = `${bottomPos}%`;
+            } else { // Ground objects (logs, crowns, obstacles)
+                element.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
+            }
+            element.style.left = `${initialX}px`;
+            gameContainer.insertBefore(element, particlesContainer);
+
+            scheduleNextSpawn();
+        }
+
+
+        function scheduleNextSpawn() {
+             if (isGameOver) return;
+             const baseDelay = getRandomInt(OBSTACLE_SPAWN_MIN_INTERVAL, OBSTACLE_SPAWN_MAX_INTERVAL);
+             const speedFactor = Math.max(0.5, INITIAL_GAME_SPEED / gameSpeed);
+             const spawnDelay = Math.max(350, baseDelay * speedFactor);
+             spawnTimeout = setTimeout(spawnGameObject, spawnDelay);
+        }
+
+        function updateAnimationSpeeds() {
+             // Base parallax speeds are updated based on gameSpeed
+             const groundDuration = Math.max(0.5, 10 / gameSpeed);
+             const treeDuration = Math.max(2, 48 / gameSpeed);
+             const midDuration = Math.max(2, 60 / gameSpeed); // Hills use this
+             const farDuration = Math.max(5, 160 / gameSpeed);
+
+             ground.style.animationDuration = `${groundDuration}s`;
+             treeLayer.style.animationDuration = `${treeDuration}s`;
+             midBackground.style.animationDuration = `${midDuration}s`;
+             farBackground.style.animationDuration = `${farDuration}s`;
+             // Sun speed is fixed by its animation duration in CSS
+        }
+
+         function scheduleSpeedIncrease() {
+             if (isGameOver) return;
+             speedIncreaseTimeout = setTimeout(() => {
+                if (gameSpeed < MAX_GAME_SPEED) {
+                     gameSpeed += SPEED_INCREMENT;
+                     gameSpeed = Math.min(gameSpeed, MAX_GAME_SPEED);
+                     updateAnimationSpeeds();
+                }
+                 scheduleSpeedIncrease();
+             }, SPEED_INCREASE_INTERVAL);
+         }
+
+        // --- Initialization ---
+        startButton.addEventListener('click', startGame);
+        playAgainButton.addEventListener('click', startGame);
+
+        window.addEventListener('load', () => {
+            loadHighScore();
+            updateGroundHeight(); // Set initial ground height variable
+            startScreen.style.display = 'flex';
+            gameOverScreen.style.display = 'none';
+            hud.style.display = 'none';
+            player.style.transform = `translateY(0px) scaleX(-1)`;
+            updateAnimationSpeeds(); // Set initial animation speeds
+            // Ensure all layers are paused initially
+            ground.style.animationPlayState = 'paused';
+            treeLayer.style.animationPlayState = 'paused';
+            midBackground.style.animationPlayState = 'paused';
+            farBackground.style.animationPlayState = 'paused';
+            invincibleOverlay.style.opacity = 0; // Ensure overlay is hidden
+            gameContainer.classList.remove('invincible-mode'); // Ensure border pulse class removed
+            // Sun is not active initially
+        });
+
+        // Update ground height variable on resize
+        window.addEventListener('resize', () => {
+            updateGroundHeight();
+        });
+
+    </script>
+
+</body>
+</html>
