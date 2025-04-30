@@ -65,7 +65,7 @@
              color: #FFA500; /* Orange color for streak */
              font-size: 1.5em; /* Increased Size */
              text-shadow: 1px 1px 0px #8B4513; /* Brown shadow */
-         }
+        }
 
 
         /* Screens (Start/Game Over) */
@@ -120,9 +120,9 @@
         }
         /* Style for Final Score Label */
         .final-score-label {
-            color: #00ff00; /* Green */
-            font-weight: bold; /* Match value */
-            font-size: 1.1em; /* Match value size */
+             color: #00ff00; /* Green */
+             font-weight: bold; /* Match value */
+             font-size: 1.1em; /* Match value size */
         }
         .final-score-value { /* Specific style for final score number */
              color: #00ff00; /* Green */
@@ -130,7 +130,7 @@
         }
         /* Remove default margin from p tags used before if needed */
         #game-over-screen p.stats, #game-over-screen p.high-score-label {
-            margin: 0; /* Remove default margins if using divs now */
+             margin: 0; /* Remove default margins if using divs now */
         }
 
 
@@ -154,7 +154,7 @@
             position: absolute;
             bottom: 10%; left: 15%;
             font-size: 40px; z-index: 50;
-            transition: transform 0.1s linear, filter 0.2s ease-in-out;
+            transition: transform 0.1s linear, filter 0.2s ease-in-out, content 0.1s; /* Added content transition */
             transform: scaleX(-1); /* Base state: flipped */
             transform-origin: bottom center;
         }
@@ -162,7 +162,7 @@
         #player.boosting {
              transform: scaleX(-1) rotate(-10deg);
         }
-         /* Style for when invincible (includes Bear Mode) */
+         /* Style for when invincible (includes Bear Mode & Dr. Fairfax Mode) */
          #player.invincible {
              transform: scale(2) scaleX(-1);
              animation: rainbowGlow 0.7s linear infinite;
@@ -188,13 +188,14 @@
 
 
         /* Obstacles & Collectibles */
-        .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear { /* Added powerups */
+        /* *** Dr. Fairfax Mode: Added .powerup-dr-fairfax to the selector *** */
+        .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear, .powerup-dr-fairfax {
             position: absolute;
             /* bottom is set by JS */
             font-size: 35px;
             /* Movement handled by JS */
             will-change: transform; /* Optimize movement */
-            transition: filter 0.2s ease-in-out, content 0.1s; /* Smooth glow changes */
+            transition: filter 0.2s ease-in-out, content 0.1s, font-size 0.1s; /* Smooth glow/size changes */
         }
         .obstacle { z-index: 45; }
         .collectible { /* Crown */
@@ -215,11 +216,28 @@
               filter: drop-shadow(0 0 6px #8B4513); /* Darker brown glow */
               animation: pulse 1.0s infinite alternate; /* Slightly faster pulse */
          }
+         /* *** Update: Adjusted Dr. Fairfax powerup style for larger, pulsing glow *** */
+         .powerup-dr-fairfax {
+             z-index: 46;
+             filter: drop-shadow(0 0 8px #00FFFF); /* Larger Cyan glow */
+             animation: pulse 1.1s infinite alternate; /* Use existing pulse animation */
+         }
          /* Style for obstacles when turned into fish */
          .turned-fish { /* Renamed from turned-beaver */
              /* Optional: slightly different appearance? */
              /* filter: drop-shadow(0 0 3px blue); */
          }
+         /* *** Dr. Fairfax Mode: Added style for items turned into cash *** */
+         .turned-cash {
+             filter: drop-shadow(0 0 4px #00FF00); /* Green glow for cash */
+         }
+         /* *** Update: Changed style for large cash to 2x size and removed transform *** */
+         .turned-cash.large-cash {
+            font-size: 70px; /* 2 * 35px (base size) */
+            filter: drop-shadow(0 0 6px #00FF00); /* Slightly bigger glow */
+            /* transform: translateY(calc(100% - 35px)); Removed - Rely on bottom positioning */
+         }
+
 
         .obstacle.insect {
              /* Insects are now squishable */
@@ -269,14 +287,14 @@
         }
          /* Tree Layer - Positioned in Sky */
          #tree-layer {
-            height: 30%;
-            bottom: 30%;
-            z-index: 20; /* In front of clouds */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='95' font-size='90'%3E🌳%3C/text%3E%3C/svg%3E");
-            background-size: 250px 80%;
-            background-position: 0% 100%;
-            background-repeat: repeat-x;
-            animation: scrollTrees 12s linear infinite;
+             height: 30%;
+             bottom: 30%;
+             z-index: 20; /* In front of clouds */
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='95' font-size='90'%3E🌳%3C/text%3E%3C/svg%3E");
+             background-size: 250px 80%;
+             background-position: 0% 100%;
+             background-repeat: repeat-x;
+             animation: scrollTrees 12s linear infinite;
          }
         #ground {
             height: 10%;
@@ -334,7 +352,7 @@
 
         @keyframes scrollSun {
              0% { transform: translateX(calc(100vw + 100px)); } /* Start far right */
-            100% { transform: translateX(-300px); } /* End further left due to size */
+             100% { transform: translateX(-300px); } /* End further left due to size */
         }
 
 
@@ -379,8 +397,13 @@
              color: #00FFFF; /* Cyan for powerup points */
              text-shadow: 1px 1px 0px #008B8B; /* Dark Cyan shadow */
          }
-          /* Style for streak count popup */
-          .particle.streak-popup {
+         /* *** Dr. Fairfax Mode: Added style for cash score *** */
+         .particle.score-popup.dr-fairfax-score {
+             color: #90EE90; /* Light Green for cash points */
+             text-shadow: 1px 1px 0px #006400; /* Dark Green shadow */
+         }
+         /* Style for streak count popup */
+         .particle.streak-popup {
              font-size: 16px;
              color: #FFA500; /* Orange */
              text-shadow: 1px 1px 0px #8B4513; /* Dark brown shadow */
@@ -409,6 +432,14 @@
              font-weight: bold;
              text-shadow: 1px 1px 0px #8B4513, 0 0 8px white;
              animation: bearTextFadeUp 2.5s ease-out forwards; /* Use custom longer animation */
+         }
+         /* *** Update: Style for Dr. Fairfax activation text - Added flashing animation *** */
+         .particle.dr-fairfax-mode-text {
+             font-size: 20px;
+             /* color: #98FB98;  Color is handled by animation */
+             font-weight: bold;
+             text-shadow: 1px 1px 0px #2E8B57, 0 0 6px white; /* Sea Green shadow */
+             animation: scoreFadeUp 1.5s ease-out forwards, flashColor 0.2s linear infinite; /* Add flashColor animation */
          }
         /* Boost particle style */
         .particle.boost-smoke {
@@ -447,6 +478,13 @@
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-50px); }
         }
+        /* *** Update: Added flashing animation for Dr. Fairfax text *** */
+        @keyframes flashColor {
+            0%   { color: #98FB98; } /* Pale Green */
+            50%  { color: #FFFF00; } /* Yellow */
+            100% { color: #98FB98; } /* Pale Green */
+        }
+
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 600px) {
@@ -465,15 +503,22 @@
              .final-score-value { font-size: 1.1em; }
 
              #player { font-size: 35px; left: 10%; }
-             .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear { font-size: 30px; }
+             /* *** Dr. Fairfax Mode: Added .powerup-dr-fairfax to the selector *** */
+             .obstacle, .collectible, .powerup-log, .powerup-bread, .powerup-bear, .powerup-dr-fairfax { font-size: 30px; }
+             /* *** Update: Added responsive style for large cash (2x size) *** */
+             .turned-cash.large-cash {
+                font-size: 60px; /* 2 * 30px (mobile base size) */
+                /* transform: translateY(calc(100% - 30px)); Removed */
+             }
+
              #ground { height: 8%; } /* Adjust ground height */
              #player { bottom: 8%; } /* Match ground height */
              #mid-background { height: 22%; bottom: 8%; } /* Adjust hills for new ground height */
              #tree-layer {
-                height: 25%;
-                bottom: 30%; /* Start above hills (8% ground + 22% hills) */
-                background-size: 180px 80%;
-                background-position: 0% 100%;
+                 height: 25%;
+                 bottom: 30%; /* Start above hills (8% ground + 22% hills) */
+                 background-size: 180px 80%;
+                 background-position: 0% 100%;
              }
              /* Adjust cloud speeds for mobile if needed, but they inherit faster speed */
              .cloud { font-size: 80px; }
@@ -481,8 +526,8 @@
              .cloud:nth-child(3n) { font-size: 90px; }
              /* Adjust sun size/pos for mobile */
              .sun {
-                 font-size: 46vh;
-                 top: -6vh; /* was 0% */
+                  font-size: 46vh;
+                  top: -6vh; /* was 0% */
              }
              .particle { font-size: 12px; }
              .particle.jump-star { font-size: 16px; }
@@ -492,6 +537,8 @@
              .particle.powerup-text { font-size: 18px; }
              .particle.slowdown-text { font-size: 18px; }
              .particle.bear-mode-text { font-size: 20px; }
+             /* *** Update: Adjusted Dr. Fairfax activation text size *** */
+             .particle.dr-fairfax-mode-text { font-size: 18px; }
              .particle.boost-smoke { font-size: 14px; }
         }
     </style>
@@ -516,29 +563,29 @@
         <div id="start-screen" class="screen">
             <h1>Beaver Bash!</h1>
              <p class="instructions">
-                 <strong>Tap Controls:</strong>
-                 Single: Jump<br>
-                 Double: Dbl Jump<br>
-                 Triple: BOOST! 🚀<br>
-                 <strong>Gameplay:</strong>
-                 Squish Insects (+25)<br>
-                 Avoid Animals!
+                  <strong>Tap Controls:</strong>
+                  Single: Jump<br>
+                  Double: Dbl Jump<br>
+                  Triple: BOOST! 🚀<br>
+                  <strong>Gameplay:</strong>
+                  Squish Insects (+25)<br>
+                  Avoid Animals!
              </p>
              <button id="start-button">Start Game</button>
         </div>
         <div id="game-over-screen" class="screen">
              <h1>Squished!</h1>
              <div class="stat-line">
-                 <span class="stat-label final-score-label">Final Score:</span>
-                 <span class="stat-value final-score-value" id="final-score">0</span>
+                  <span class="stat-label final-score-label">Final Score:</span>
+                  <span class="stat-value final-score-value" id="final-score">0</span>
              </div>
              <div class="stat-line">
-                 <span class="stat-label">Longest Streak:</span>
-                 <span class="stat-value" id="longest-streak">0</span>
+                  <span class="stat-label">Longest Streak:</span>
+                  <span class="stat-value" id="longest-streak">0</span>
              </div>
               <div class="stat-line">
-                 <span class="stat-label">High Score:</span>
-                 <span class="stat-value" id="high-score">0</span>
+                  <span class="stat-label">High Score:</span>
+                  <span class="stat-value" id="high-score">0</span>
              </div>
              <button id="play-again-button">Play Again</button>
         </div>
@@ -598,13 +645,13 @@
         const CROWN_EMOJI = '👑';
         const CROWN_POINTS = 50;
         const INSECT_SQUISH_POINTS = 25;
-        const CROWN_SPAWN_CHANCE = 0.05;
+        const CROWN_SPAWN_CHANCE = 0.05; // 5%
         const LOG_EMOJI = '🪵';
-        const LOG_SPAWN_CHANCE = 0.04;
+        const LOG_SPAWN_CHANCE = 0.04; // 4%
         const BREAD_EMOJI = '🍞';
-        const BREAD_SPAWN_CHANCE = 0.03;
+        const BREAD_SPAWN_CHANCE = 0.03; // 3%
         const BEAR_EMOJI = '🐻';
-        const BEAR_SPAWN_CHANCE = 0.03;
+        const BEAR_SPAWN_CHANCE = 0.03; // 3%
         const BEAR_MODE_PLAYER_EMOJI = '🐻';
         const BEAR_MODE_OBSTACLE_EMOJI = '🐟';
         const BEAR_MODE_DURATION = 4000;
@@ -614,6 +661,18 @@
         const INVINCIBILITY_SPEED_MULTIPLIER = 3.0; // Log invincibility speed
         const SLOWDOWN_DURATION = 4000;
         const SLOWDOWN_MULTIPLIER = 0.3;
+        // *** Dr. Fairfax Mode: Added constants ***
+        const DR_FAIRFAX_EMOJI = '👩🏼‍⚕️'; // Note: May render differently across browsers/OS
+        // *** Update: Increased spawn chance for testing ***
+        const DR_FAIRFAX_SPAWN_CHANCE = 0.30; // 30% (was 0.02)
+        const DR_FAIRFAX_MODE_DURATION = 5000; // 5 seconds
+        const DR_FAIRFAX_OBSTACLE_EMOJI = '💰';
+        const DR_FAIRFAX_MODE_POINTS = 100; // Same as bear mode
+        const DR_FAIRFAX_ACTIVATION_TEXT = 'Extra funding please!';
+        const PLAYER_BEAVER_EMOJI = '🦫'; // Store default beaver emoji
+        // *** Update: Added speed multiplier for Dr. Fairfax mode ***
+        const DR_FAIRFAX_SPEED_MULTIPLIER = 2.5; // Speed multiplier for Dr. Fairfax mode
+        // --- End Dr. Fairfax Mode constants ---
         const TRIPLE_TAP_WINDOW = 350;
         const BOOST_DURATION = 1500;
         const BOOST_SPEED_MULTIPLIER = 2.0;
@@ -650,12 +709,16 @@
         let isBoosting = false;
         let boostEndTime = 0;
         let boostParticleInterval = null;
-        let isInvincible = false; // Log or Bear invincibility
+        let isInvincible = false; // Log, Bear, or Dr. Fairfax invincibility
         let invincibilityEndTime = 0;
         let isSlowed = false;
         let slowdownEndTime = 0;
         let isBearMode = false;
         let bearModeEndTime = 0;
+        // *** Dr. Fairfax Mode: Added state variables ***
+        let isDrFairfaxMode = false;
+        let drFairfaxModeEndTime = 0;
+        // --- End Dr. Fairfax Mode state variables ---
         let currentStreak = 0; // Added streak counter
         let longestStreak = 0; // Added longest streak tracker
 
@@ -673,245 +736,258 @@
         // --- Streak Functions ---
         // *** Updated Streak Multiplier Logic (Uncapped) ***
         function calculateStreakMultiplier(streak) {
-            if (streak < STREAK_START_THRESHOLD) return 1.0; // No bonus < 3
-            if (streak < 5) return 1.10;  // Streak 3-4: +10%
-            if (streak < 10) return 1.25; // Streak 5-9: +25%
-            // For streak 10+, start at 1.5x and add 0.2x for every 5 levels beyond 10
-            return 1.5 + Math.floor((streak - 10) / 5) * 0.2;
+             if (streak < STREAK_START_THRESHOLD) return 1.0; // No bonus < 3
+             if (streak < 5) return 1.10;  // Streak 3-4: +10%
+             if (streak < 10) return 1.25; // Streak 5-9: +25%
+             // For streak 10+, start at 1.5x and add 0.2x for every 5 levels beyond 10
+             return 1.5 + Math.floor((streak - 10) / 5) * 0.2;
         }
 
 
         function updateStreakDisplay() {
-            if (currentStreak >= STREAK_START_THRESHOLD) {
-                streakDisplay.textContent = `x${currentStreak}`;
-                streakDisplay.style.display = 'inline';
-            } else {
-                streakDisplay.style.display = 'none';
-            }
+             if (currentStreak >= STREAK_START_THRESHOLD) {
+                  streakDisplay.textContent = `x${currentStreak}`;
+                  streakDisplay.style.display = 'inline';
+             } else {
+                  streakDisplay.style.display = 'none';
+             }
         }
 
         // *** Updated incrementStreak for rounding and crown multiplier ***
+        // *** Dr. Fairfax Mode: Added 'drFairfax' to score types that get multiplier ***
         function incrementStreak(pointsToAdd, scoreType, itemX, itemY) {
-            currentStreak++;
-            longestStreak = Math.max(longestStreak, currentStreak);
-            const multiplier = calculateStreakMultiplier(currentStreak);
-            let finalPoints = pointsToAdd; // Start with base points
+             currentStreak++;
+             longestStreak = Math.max(longestStreak, currentStreak);
+             const multiplier = calculateStreakMultiplier(currentStreak);
+             let finalPoints = pointsToAdd; // Start with base points
 
-            // Apply multiplier to relevant types (now includes crown)
-            if (scoreType === 'insect' || scoreType === 'powerup' || scoreType === 'bear' || scoreType === 'crown') {
-                 finalPoints = pointsToAdd * multiplier; // Apply multiplier
-            }
-            // Powerups themselves don't award points
-            else if (scoreType === 'log' || scoreType === 'bread' || scoreType === 'bear-collect') { // Use 'bear-collect' to differentiate from bear hit
-                finalPoints = 0;
-            }
+             // Apply multiplier to relevant types (now includes crown and Dr. Fairfax cash)
+             if (scoreType === 'insect' || scoreType === 'powerup' || scoreType === 'bear' || scoreType === 'crown' || scoreType === 'drFairfax') {
+                  finalPoints = pointsToAdd * multiplier; // Apply multiplier
+             }
+             // Powerups themselves don't award points when collected
+             else if (scoreType === 'log' || scoreType === 'bread' || scoreType === 'bear-collect' || scoreType === 'drFairfax-collect') {
+                  finalPoints = 0;
+             }
 
-            // *** Rounding Logic Added Here ***
-            // Round up to the nearest 5, but only if points > 0
-            if (finalPoints > 0) {
-                finalPoints = Math.ceil(finalPoints / 5) * 5;
-            }
+             // *** Rounding Logic Added Here ***
+             // Round up to the nearest 5, but only if points > 0
+             if (finalPoints > 0) {
+                  finalPoints = Math.ceil(finalPoints / 5) * 5;
+             }
 
-            score += finalPoints; // Add calculated & rounded points
-            updateHUD(); // Updates score and streak display
+             score += finalPoints; // Add calculated & rounded points
+             updateHUD(); // Updates score and streak display
 
-            // Trigger streak visual effect if threshold met
-            if (currentStreak >= STREAK_START_THRESHOLD) {
-                const playerRect = player.getBoundingClientRect();
-                // Position streak particle higher above player
-                const particleX = playerRect.left + (playerRect.width / 2);
-                const particleY = playerRect.top - 40; // Increased offset
-                createParticle('streak', particleX, particleY, `x${currentStreak}`);
-            }
-            return finalPoints; // Return final points for score popup display
+             // Trigger streak visual effect if threshold met
+             if (currentStreak >= STREAK_START_THRESHOLD) {
+                  const playerRect = player.getBoundingClientRect();
+                  // Position streak particle higher above player
+                  const particleX = playerRect.left + (playerRect.width / 2);
+                  const particleY = playerRect.top - 40; // Increased offset
+                  createParticle('streak', particleX, particleY, `x${currentStreak}`);
+             }
+             return finalPoints; // Return final points for score popup display
         }
 
 
         function resetStreak() {
-            // console.log("Streak Reset!"); // Debugging
-            currentStreak = 0;
-            updateStreakDisplay();
+             // console.log("Streak Reset!"); // Debugging
+             currentStreak = 0;
+             updateStreakDisplay();
         }
 
 
         // --- Particle System ---
+        // *** Dr. Fairfax Mode: Added cases for 'dr-fairfax-mode-activate' and score type 'drFairfax' ***
         function createParticle(type, x, y, text = null, isSpecialScore = false) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            let emoji = '';
-            let duration = 600;
+             const particle = document.createElement('div');
+             particle.classList.add('particle');
+             let emoji = '';
+             let duration = 600;
 
-            switch(type) {
-                case 'jump':
-                    particle.classList.add('jump-star');
-                    emoji = '✨';
-                    duration = 500;
-                    break;
-                case 'land':
-                    particle.classList.add('land-smoke');
-                    emoji = '💨';
-                    x += getRandomInt(-10, 10);
-                    duration = 700;
-                    break;
-                case 'score':
-                    particle.classList.add('score-popup');
-                    if (isSpecialScore === 'insect') {
-                         particle.classList.add('insect-score');
-                         emoji = text || `+${INSECT_SQUISH_POINTS}`;
-                    } else if (isSpecialScore === 'powerup') {
-                         particle.classList.add('powerup-score');
-                         emoji = text || `+${INVINCIBILITY_POINTS}`;
-                    } else if (isSpecialScore === 'bear') {
-                         particle.classList.add('powerup-score');
-                         emoji = text || `+${BEAR_MODE_POINTS}`; // Uses updated constant
-                    } else { // Default is crown score
-                         emoji = text || `+${CROWN_POINTS}`;
-                    }
-                    duration = 800;
-                    break;
-                 case 'streak': // Added streak particle type
-                     particle.classList.add('streak-popup');
-                     emoji = text || '🔥'; // Use text (e.g., x4) or fire emoji
-                     duration = 600; // Faster fade
-                     break;
-                 case 'boost':
-                     particle.classList.add('boost-smoke');
-                     emoji = '💨';
-                     x -= player.clientWidth / 2 + getRandomInt(0,10);
-                     y += getRandomInt(-5, 5);
-                     duration = 300;
-                     break;
-                 case 'powerup-activate': // Text for log powerup activation
-                     particle.classList.add('powerup-text');
-                     emoji = text || 'INVINCIBLE!';
-                     duration = 1200;
-                     break;
-                 case 'slowdown-activate': // Text for slowdown activation
-                     particle.classList.add('slowdown-text');
-                     emoji = text || 'Loaf of bread!'; // Updated text
-                     duration = 1000;
-                     break;
-                 case 'bear-mode-activate': // Text for bear mode activation
-                     particle.classList.add('bear-mode-text');
-                     emoji = text || 'If you gotta eat...eat!'; // Updated text
-                     duration = 2500; // Increased Duration
-                     break;
-                default:
-                    emoji = '❓';
-            }
-            particle.textContent = emoji;
-            particle.style.left = `${x}px`;
-            particle.style.top = `${y}px`;
-            particlesContainer.appendChild(particle);
+             switch(type) {
+                  case 'jump':
+                       particle.classList.add('jump-star');
+                       emoji = '✨';
+                       duration = 500;
+                       break;
+                  case 'land':
+                       particle.classList.add('land-smoke');
+                       emoji = '💨';
+                       x += getRandomInt(-10, 10);
+                       duration = 700;
+                       break;
+                  case 'score':
+                       particle.classList.add('score-popup');
+                       if (isSpecialScore === 'insect') {
+                            particle.classList.add('insect-score');
+                            emoji = text || `+${INSECT_SQUISH_POINTS}`;
+                       } else if (isSpecialScore === 'powerup') {
+                            particle.classList.add('powerup-score');
+                            emoji = text || `+${INVINCIBILITY_POINTS}`;
+                       } else if (isSpecialScore === 'bear') {
+                            particle.classList.add('powerup-score'); // Use same color as powerup
+                            emoji = text || `+${BEAR_MODE_POINTS}`; // Uses updated constant
+                       } else if (isSpecialScore === 'drFairfax') { // *** Dr. Fairfax Mode: Score type for cash ***
+                            particle.classList.add('dr-fairfax-score');
+                            emoji = text || `+${DR_FAIRFAX_MODE_POINTS}`;
+                       } else { // Default is crown score
+                            emoji = text || `+${CROWN_POINTS}`;
+                       }
+                       duration = 800;
+                       break;
+                    case 'streak': // Added streak particle type
+                         particle.classList.add('streak-popup');
+                         emoji = text || '🔥'; // Use text (e.g., x4) or fire emoji
+                         duration = 600; // Faster fade
+                         break;
+                    case 'boost':
+                         particle.classList.add('boost-smoke');
+                         emoji = '💨';
+                         x -= player.clientWidth / 2 + getRandomInt(0,10);
+                         y += getRandomInt(-5, 5);
+                         duration = 300;
+                         break;
+                    case 'powerup-activate': // Text for log powerup activation
+                         particle.classList.add('powerup-text');
+                         emoji = text || 'INVINCIBLE!';
+                         duration = 1200;
+                         break;
+                    case 'slowdown-activate': // Text for slowdown activation
+                         particle.classList.add('slowdown-text');
+                         emoji = text || 'Loaf of bread!'; // Updated text
+                         duration = 1000;
+                         break;
+                    case 'bear-mode-activate': // Text for bear mode activation
+                         particle.classList.add('bear-mode-text');
+                         emoji = text || 'If you gotta eat...eat!'; // Updated text
+                         duration = 2500; // Increased Duration
+                         break;
+                    // *** Dr. Fairfax Mode: Activation text particle ***
+                    case 'dr-fairfax-mode-activate':
+                         particle.classList.add('dr-fairfax-mode-text');
+                         emoji = text || DR_FAIRFAX_ACTIVATION_TEXT;
+                         duration = 1500; // Duration of the fade-up
+                         // The flashing animation runs concurrently via CSS
+                         break;
+                    // --- End Dr. Fairfax Mode ---
+                  default:
+                       emoji = '❓';
+             }
+             particle.textContent = emoji;
+             particle.style.left = `${x}px`;
+             particle.style.top = `${y}px`;
+             particlesContainer.appendChild(particle);
 
-            // Adjust timeout to match potentially longer animation
-            setTimeout(() => {
-                particle.remove();
-            }, duration);
+             // Adjust timeout to match potentially longer animation (fade up duration)
+             setTimeout(() => {
+                  particle.remove();
+             }, duration);
         }
 
         // --- Cloud System ---
         function spawnCloud(isInitial = false) {
-            if (!isInitial && (isGameOver || activeClouds.length >= MAX_CLOUDS)) return;
+             if (!isInitial && (isGameOver || activeClouds.length >= MAX_CLOUDS)) return;
 
-            const cloud = document.createElement('div');
-            cloud.classList.add('cloud');
-            cloud.textContent = '☁️';
+             const cloud = document.createElement('div');
+             cloud.classList.add('cloud');
+             cloud.textContent = '☁️';
 
-            const cloudY = getRandomInt(5, 65);
-            const scale = (Math.random() * 0.4 + 0.8) * (isMobile() ? 0.8 : 1);
-            cloud.style.setProperty('--cloud-scale', scale);
-            cloud.style.top = `${cloudY}%`;
+             const cloudY = getRandomInt(5, 65);
+             const scale = (Math.random() * 0.4 + 0.8) * (isMobile() ? 0.8 : 1);
+             cloud.style.setProperty('--cloud-scale', scale);
+             cloud.style.top = `${cloudY}%`;
 
-            const baseAnimationDuration = CLOUD_BASE_ANIMATION_DURATION;
+             const baseAnimationDuration = CLOUD_BASE_ANIMATION_DURATION;
 
-            if (isInitial) {
-                const randomDelay = -Math.random() * baseAnimationDuration;
-                cloud.style.animationDelay = `${randomDelay}s`;
-            } else {
-                 cloud.style.animationDelay = '0s';
-            }
+             if (isInitial) {
+                  const randomDelay = -Math.random() * baseAnimationDuration;
+                  cloud.style.animationDelay = `${randomDelay}s`;
+             } else {
+                   cloud.style.animationDelay = '0s';
+             }
 
-            cloudsContainer.appendChild(cloud);
-            activeClouds.push(cloud);
+             cloudsContainer.appendChild(cloud);
+             activeClouds.push(cloud);
 
-            const longestCloudDuration = 75; // From .cloud:nth-child(2n)
-            setTimeout(() => {
-                 if (cloud) cloud.remove();
-                 activeClouds = activeClouds.filter(c => c !== cloud);
-            }, (longestCloudDuration + 5) * 1000); // +5s buffer
+             const longestCloudDuration = 75; // From .cloud:nth-child(2n)
+             setTimeout(() => {
+                  if (cloud) cloud.remove();
+                  activeClouds = activeClouds.filter(c => c !== cloud);
+             }, (longestCloudDuration + 5) * 1000); // +5s buffer
         }
 
 
         function scheduleNextCloud() {
-             if (isGameOver) return;
-             const delay = CLOUD_SPAWN_INTERVAL + getRandomInt(-1500, 1500);
-             cloudSpawnTimeout = setTimeout(() => {
-                 spawnCloud();
-                 scheduleNextCloud();
-             }, delay);
+              if (isGameOver) return;
+              const delay = CLOUD_SPAWN_INTERVAL + getRandomInt(-1500, 1500);
+              cloudSpawnTimeout = setTimeout(() => {
+                  spawnCloud();
+                  scheduleNextCloud();
+              }, delay);
         }
 
         // --- Sun System ---
         function spawnSun() {
-            if (isGameOver || activeSun) return;
-            // console.log("Spawning sun!"); // Debugging
+             if (isGameOver || activeSun) return;
+             // console.log("Spawning sun!"); // Debugging
 
-            const sun = document.createElement('div');
-            sun.classList.add('sun');
-            sun.textContent = '☀️';
-            sun.style.animationDuration = `${SUN_ANIMATION_DURATION}s`;
-            sun.style.animationPlayState = 'running';
+             const sun = document.createElement('div');
+             sun.classList.add('sun');
+             sun.textContent = '☀️';
+             sun.style.animationDuration = `${SUN_ANIMATION_DURATION}s`;
+             sun.style.animationPlayState = 'running';
 
-            gameContainer.insertBefore(sun, cloudsContainer);
-            activeSun = sun;
-            // console.log("Sun element added:", activeSun); // Debugging
+             gameContainer.insertBefore(sun, cloudsContainer);
+             activeSun = sun;
+             // console.log("Sun element added:", activeSun); // Debugging
 
-            if(sunCleanupTimeout) clearTimeout(sunCleanupTimeout);
-            sunCleanupTimeout = setTimeout(() => {
-                // console.log("Cleaning up sun"); // Debugging
-                if (activeSun) {
-                    activeSun.remove();
-                    activeSun = null;
-                }
-                scheduleNextSun(false); // Schedule next regular sun
-            }, (SUN_ANIMATION_DURATION + 5) * 1000);
+             if(sunCleanupTimeout) clearTimeout(sunCleanupTimeout);
+             sunCleanupTimeout = setTimeout(() => {
+                  // console.log("Cleaning up sun"); // Debugging
+                  if (activeSun) {
+                       activeSun.remove();
+                       activeSun = null;
+                  }
+                  scheduleNextSun(false); // Schedule next regular sun
+             }, (SUN_ANIMATION_DURATION + 5) * 1000);
         }
 
         function scheduleNextSun(isInitial = false) {
-            if (isGameOver) return;
-            if (sunSpawnTimeout) clearTimeout(sunSpawnTimeout);
-            if (!activeSun) {
-                const minInterval = isInitial ? INITIAL_SUN_SPAWN_MIN : SUN_SPAWN_INTERVAL_MIN;
-                const maxInterval = isInitial ? INITIAL_SUN_SPAWN_MAX : SUN_SPAWN_INTERVAL_MAX;
-                const delay = getRandomInt(minInterval, maxInterval);
-                // console.log(`Scheduling ${isInitial ? 'initial' : 'next'} sun in ${delay / 1000}s`); // Debugging
-                sunSpawnTimeout = setTimeout(spawnSun, delay);
-            }
+             if (isGameOver) return;
+             if (sunSpawnTimeout) clearTimeout(sunSpawnTimeout);
+             if (!activeSun) {
+                  const minInterval = isInitial ? INITIAL_SUN_SPAWN_MIN : SUN_SPAWN_INTERVAL_MIN;
+                  const maxInterval = isInitial ? INITIAL_SUN_SPAWN_MAX : SUN_SPAWN_INTERVAL_MAX;
+                  const delay = getRandomInt(minInterval, maxInterval);
+                  // console.log(`Scheduling ${isInitial ? 'initial' : 'next'} sun in ${delay / 1000}s`); // Debugging
+                  sunSpawnTimeout = setTimeout(spawnSun, delay);
+             }
         }
 
         // --- Collision Detection ---
         function checkCollision(playerRect, itemRect) {
-            // Adjust padding based on invincibility/bear mode (larger hitbox when large)
-            const scaleFactor = (isInvincible || isBearMode) ? 2 : 1; // Use 2x scale factor
-            const baseWidth = player.clientWidth / scaleFactor; // Approx original width
-            const baseHeight = player.clientHeight / scaleFactor; // Approx original height
-            const paddingX = baseWidth * 0.2;
-            const paddingY = baseHeight * 0.15;
+             // Adjust padding based on invincibility/bear/drFairfax mode (larger hitbox when large)
+             const scaleFactor = (isInvincible || isBearMode || isDrFairfaxMode) ? 2 : 1; // Use 2x scale factor
+             const baseWidth = player.clientWidth / scaleFactor; // Approx original width
+             const baseHeight = player.clientHeight / scaleFactor; // Approx original height
+             const paddingX = baseWidth * 0.2;
+             const paddingY = baseHeight * 0.15;
 
-             // Calculate player bounds based on scale and transform origin (bottom center)
-             const playerLeft = playerRect.left + (playerRect.width - baseWidth) / 2;
-             const playerRight = playerRect.right - (playerRect.width - baseWidth) / 2;
-             const playerTop = playerRect.top; // Scales upwards from bottom
-             const playerBottom = playerRect.bottom;
+              // Calculate player bounds based on scale and transform origin (bottom center)
+              const playerLeft = playerRect.left + (playerRect.width - baseWidth) / 2;
+              const playerRight = playerRect.right - (playerRect.width - baseWidth) / 2;
+              const playerTop = playerRect.top; // Scales upwards from bottom
+              const playerBottom = playerRect.bottom;
 
 
-            return (
-                playerLeft + paddingX < itemRect.right &&
-                playerRight - paddingX > itemRect.left &&
-                playerTop + paddingY < itemRect.bottom && // Check top edge collision
-                playerBottom - paddingY > itemRect.top // Check bottom edge collision
-            );
+             return (
+                  playerLeft + paddingX < itemRect.right &&
+                  playerRight - paddingX > itemRect.left &&
+                  playerTop + paddingY < itemRect.bottom && // Check top edge collision
+                  playerBottom - paddingY > itemRect.top // Check bottom edge collision
+             );
         }
 
         // --- Utility ---
@@ -921,603 +997,753 @@
 
          // --- Update Ground Height Variable ---
          function updateGroundHeight() {
-            const groundStyle = window.getComputedStyle(ground);
-            const heightStr = groundStyle.getPropertyValue('height');
-            if (heightStr.endsWith('%')) {
-                 GROUND_HEIGHT_PERCENT = parseFloat(heightStr) || 10;
-            } else if (heightStr.endsWith('px')) {
-                 const containerHeight = gameContainer.clientHeight;
-                 GROUND_HEIGHT_PERCENT = containerHeight > 0 ? (parseFloat(heightStr) / containerHeight) * 100 : 10;
-            } else {
-                 GROUND_HEIGHT_PERCENT = 10;
-            }
-             player.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
+             const groundStyle = window.getComputedStyle(ground);
+             const heightStr = groundStyle.getPropertyValue('height');
+             if (heightStr.endsWith('%')) {
+                  GROUND_HEIGHT_PERCENT = parseFloat(heightStr) || 10;
+             } else if (heightStr.endsWith('px')) {
+                  const containerHeight = gameContainer.clientHeight;
+                  GROUND_HEIGHT_PERCENT = containerHeight > 0 ? (parseFloat(heightStr) / containerHeight) * 100 : 10;
+             } else {
+                  GROUND_HEIGHT_PERCENT = 10;
+             }
+              player.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
          }
 
          // --- Bear Mode Transformations ---
          function transformToFish() { // Renamed
              // Change existing obstacles
              obstacles.forEach(obs => {
-                 obs.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
-                 obs.element.classList.add('turned-fish'); // Optional class
+                  obs.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                  obs.element.classList.add('turned-fish'); // Optional class
+                  obs.element.classList.remove('turned-cash', 'large-cash'); // Ensure cash/large classes are removed
              });
-             // Change existing collectibles (except the triggering bear)
+             // Change existing collectibles (except the triggering bear/drFairfax)
              collectibles.forEach(col => {
-                 if (!col.isBear) { // Don't change the bear that was just collected
-                     col.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
-                     col.element.classList.add('turned-fish');
-                 }
+                  if (!col.isBear && !col.isDrFairfax) { // Don't change the trigger item
+                       col.element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                       col.element.classList.add('turned-fish');
+                       col.element.classList.remove('turned-cash', 'large-cash'); // Ensure cash/large classes are removed
+                  }
              });
          }
 
          function revertFromFish() { // Renamed
              // Revert obstacles
              obstacles.forEach(obs => {
-                 // Only revert if it has an original emoji (might have been removed already)
-                 if (obs.element && obs.originalEmoji) {
-                     obs.element.textContent = obs.originalEmoji;
-                     obs.element.classList.remove('turned-fish');
-                 }
+                  // Only revert if it has an original emoji (might have been removed already)
+                  if (obs.element && obs.originalEmoji) {
+                       obs.element.textContent = obs.originalEmoji;
+                       obs.element.classList.remove('turned-fish');
+                  }
              });
              // Revert collectibles
              collectibles.forEach(col => {
-                 // Only revert if it has an original emoji stored and still exists
-                 if (col.element && col.originalEmoji) {
-                    col.element.textContent = col.originalEmoji;
-                    col.element.classList.remove('turned-fish');
+                  // Only revert if it has an original emoji stored and still exists
+                  if (col.element && col.originalEmoji) {
+                     col.element.textContent = col.originalEmoji;
+                     col.element.classList.remove('turned-fish');
+                  }
+             });
+         }
+
+         // *** Dr. Fairfax Mode: Transformation functions ***
+         // *** Update: Added large-cash class ***
+         function transformToCash() {
+             // Change existing obstacles
+             obstacles.forEach(obs => {
+                 obs.element.textContent = DR_FAIRFAX_OBSTACLE_EMOJI; // Cash
+                 obs.element.classList.add('turned-cash', 'large-cash'); // Add large-cash class
+                 obs.element.classList.remove('turned-fish'); // Ensure fish class is removed
+             });
+             // Change existing collectibles (except the triggering Dr. Fairfax/Bear)
+             collectibles.forEach(col => {
+                 if (!col.isDrFairfax && !col.isBear) { // Don't change the trigger item
+                     col.element.textContent = DR_FAIRFAX_OBSTACLE_EMOJI; // Cash
+                     col.element.classList.add('turned-cash', 'large-cash'); // Add large-cash class
+                     col.element.classList.remove('turned-fish'); // Ensure fish class is removed
                  }
              });
          }
 
+         // *** Update: Remove large-cash class ***
+         function revertFromCash() {
+             // Revert obstacles
+             obstacles.forEach(obs => {
+                 if (obs.element && obs.originalEmoji) {
+                     obs.element.textContent = obs.originalEmoji;
+                     obs.element.classList.remove('turned-cash', 'large-cash'); // Remove large-cash class
+                 }
+             });
+             // Revert collectibles
+             collectibles.forEach(col => {
+                 if (col.element && col.originalEmoji) {
+                     col.element.textContent = col.originalEmoji;
+                     col.element.classList.remove('turned-cash', 'large-cash'); // Remove large-cash class
+                 }
+             });
+         }
+         // --- End Dr. Fairfax Mode ---
+
          // --- Cancel Powerup Effects ---
-         function cancelAllPowerups(except = null) { // Added 'except' parameter
+         // *** Dr. Fairfax Mode: Updated to handle the new mode ***
+         // *** Update: Handle player emoji revert correctly ***
+         function cancelAllPowerups(except = null) {
+             // Cancel Boost if not the exception
              if (except !== 'boost') {
                  isBoosting = false;
                  boostEndTime = 0;
                  if (boostParticleInterval) clearInterval(boostParticleInterval);
                  player.classList.remove('boosting');
              }
-             // If cancelling because of Bear or Slowdown, cancel Log Invincibility visuals
-             if (except === 'bear' || except === 'slowdown') {
-                 isInvincible = false; // Ensure regular invincibility is off
+
+             // Cancel Log Invincibility / Bear / Dr Fairfax visuals if not the exception
+             if (except !== 'invincible' && except !== 'bear' && except !== 'drFairfax') {
+                 isInvincible = false; // Turn off the general invincibility flag
                  invincibilityEndTime = 0;
                  invincibleOverlay.style.opacity = 0;
                  gameContainer.classList.remove('invincible-mode');
-                 player.classList.remove('invincible');
+                 player.classList.remove('invincible'); // Remove visual effect
              }
-             // If cancelling because of Bear or Log, cancel Slowdown
-             if (except === 'bear' || except === 'invincible') {
+
+             // Cancel Slowdown if not the exception
+             if (except !== 'slowdown') {
                  isSlowed = false;
                  slowdownEndTime = 0;
              }
-             // If cancelling because of Log or Slowdown, cancel Bear mode
-             if (except === 'invincible' || except === 'slowdown') {
+
+             // Cancel Bear mode specifically if not the exception
+             let wasBearMode = isBearMode; // Track if bear mode was active before potential cancellation
+             if (except !== 'bear') {
                  if (isBearMode) { // Only revert if ending bear mode specifically
                      revertFromFish();
                  }
                  isBearMode = false;
                  bearModeEndTime = 0;
-                 player.textContent = '🦫';
-                 // Ensure invincible class is removed if bear mode ends and not starting log invincibility
-                 if (except !== 'invincible') player.classList.remove('invincible');
+                 // Don't revert emoji yet, handle below based on other active modes
+             }
+
+             // Cancel Dr. Fairfax mode specifically if not the exception
+             let wasDrFairfaxMode = isDrFairfaxMode; // Track if Dr Fairfax mode was active
+             if (except !== 'drFairfax') {
+                 if (isDrFairfaxMode) { // Only revert if ending Dr. Fairfax mode specifically
+                     revertFromCash();
+                 }
+                 isDrFairfaxMode = false;
+                 drFairfaxModeEndTime = 0;
+                 // Don't revert emoji yet
+             }
+
+             // --- Determine Final Player Emoji ---
+             // If Bear mode is starting or continuing, set to Bear
+             if (except === 'bear' || isBearMode) {
+                 player.textContent = BEAR_MODE_PLAYER_EMOJI;
+             }
+             // Else if Dr. Fairfax mode is starting or continuing, set to Dr. Fairfax
+             else if (except === 'drFairfax' || isDrFairfaxMode) {
+                 player.textContent = DR_FAIRFAX_EMOJI;
+             }
+             // Otherwise, revert to Beaver
+             else {
+                 player.textContent = PLAYER_BEAVER_EMOJI;
+             }
+
+             // Ensure player invincibility visual is removed ONLY if NO invincible mode is active/starting
+             if (!isInvincible && except !== 'invincible' && except !== 'bear' && except !== 'drFairfax') {
+                 player.classList.remove('invincible');
              }
          }
 
 
         // --- Game Logic ---
         function startGame() {
-            updateGroundHeight();
-            score = 0;
-            playerY = 0;
-            playerVelocityY = 0;
-            jumpsRemaining = MAX_JUMPS;
-            isGameOver = false;
-            cancelAllPowerups(); // Reset all powerup states
-            currentStreak = 0; // Reset streak
-            longestStreak = 0; // Reset longest streak
-            updateStreakDisplay(); // Hide streak display
-            tapCount = 0;
-            lastTapTime = 0;
-            gameSpeed = INITIAL_GAME_SPEED;
+             updateGroundHeight();
+             score = 0;
+             playerY = 0;
+             playerVelocityY = 0;
+             jumpsRemaining = MAX_JUMPS;
+             isGameOver = false;
+             cancelAllPowerups(); // Reset all powerup states
+             player.textContent = PLAYER_BEAVER_EMOJI; // Ensure player starts as beaver
+             currentStreak = 0; // Reset streak
+             longestStreak = 0; // Reset longest streak
+             updateStreakDisplay(); // Hide streak display
+             tapCount = 0;
+             lastTapTime = 0;
+             gameSpeed = INITIAL_GAME_SPEED;
 
-            obstacles.forEach(obs => obs.element.remove());
-            obstacles = [];
-            collectibles.forEach(col => col.element.remove());
-            collectibles = []; // Clear crowns, logs, bread, bears
+             obstacles.forEach(obs => obs.element.remove());
+             obstacles = [];
+             collectibles.forEach(col => col.element.remove());
+             collectibles = []; // Clear crowns, logs, bread, bears, drFairfax
 
-            activeClouds.forEach(c => c.remove());
-            activeClouds = [];
-            for (let i = 0; i < INITIAL_CLOUD_COUNT; i++) {
-                spawnCloud(true);
-            }
-            // Clear existing sun and timeouts
-            if (activeSun) {
-                activeSun.remove();
-                activeSun = null;
-            }
-            clearTimeout(sunSpawnTimeout);
-            clearTimeout(sunCleanupTimeout);
+             activeClouds.forEach(c => c.remove());
+             activeClouds = [];
+             for (let i = 0; i < INITIAL_CLOUD_COUNT; i++) {
+                  spawnCloud(true);
+             }
+             // Clear existing sun and timeouts
+             if (activeSun) {
+                  activeSun.remove();
+                  activeSun = null;
+             }
+             clearTimeout(sunSpawnTimeout);
+             clearTimeout(sunCleanupTimeout);
 
 
-            particlesContainer.innerHTML = '';
-            player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
+             particlesContainer.innerHTML = '';
+             player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
 
-            startScreen.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            hud.style.display = 'flex'; // Use flex for HUD layout
-            updateHUD();
+             startScreen.style.display = 'none'; // Hide start screen
+             gameOverScreen.style.display = 'none'; // Hide game over screen
+             hud.style.display = 'flex'; // Use flex for HUD layout
+             updateHUD();
 
-            // Ensure all layers are running
-            ground.style.animationPlayState = 'running';
-            treeLayer.style.animationPlayState = 'running';
-            midBackground.style.animationPlayState = 'running';
-            farBackground.style.animationPlayState = 'running';
-            if (activeSun) activeSun.style.animationPlayState = 'running';
+             // Ensure all layers are running
+             ground.style.animationPlayState = 'running';
+             treeLayer.style.animationPlayState = 'running';
+             midBackground.style.animationPlayState = 'running';
+             farBackground.style.animationPlayState = 'running';
+             if (activeSun) activeSun.style.animationPlayState = 'running';
 
-            updateAnimationSpeeds();
+             updateAnimationSpeeds();
 
-            if (gameLoopInterval) clearInterval(gameLoopInterval);
-            gameLoopInterval = setInterval(gameLoop, 1000 / 60);
+             if (gameLoopInterval) clearInterval(gameLoopInterval);
+             gameLoopInterval = setInterval(gameLoop, 1000 / 60);
 
-            if (scoreUpdateInterval) clearInterval(scoreUpdateInterval);
-            scoreUpdateInterval = setInterval(() => { if (!isGameOver) score += gameSpeed * 0.2; updateHUD(); }, 100);
+             if (scoreUpdateInterval) clearInterval(scoreUpdateInterval);
+             scoreUpdateInterval = setInterval(() => { if (!isGameOver) score += gameSpeed * 0.2; updateHUD(); }, 100);
 
-            if (spawnTimeout) clearTimeout(spawnTimeout);
-            scheduleNextSpawn();
+             if (spawnTimeout) clearTimeout(spawnTimeout);
+             scheduleNextSpawn();
 
-            if (speedIncreaseTimeout) clearTimeout(speedIncreaseTimeout);
-            scheduleSpeedIncrease();
+             if (speedIncreaseTimeout) clearTimeout(speedIncreaseTimeout);
+             scheduleSpeedIncrease();
 
-            if (cloudSpawnTimeout) clearTimeout(cloudSpawnTimeout);
-            scheduleNextCloud();
+             if (cloudSpawnTimeout) clearTimeout(cloudSpawnTimeout);
+             scheduleNextCloud();
 
-            scheduleNextSun(true); // Start scheduling the INITIAL sun
+             scheduleNextSun(true); // Start scheduling the INITIAL sun
 
-            gameContainer.addEventListener('pointerdown', handleTapInput); // Use updated listener
+             gameContainer.addEventListener('pointerdown', handleTapInput); // Use updated listener
         }
 
         function endGame() {
-            isGameOver = true;
-            cancelAllPowerups(); // Reset all powerup states
-            clearInterval(gameLoopInterval);
-            clearInterval(scoreUpdateInterval);
-            clearTimeout(spawnTimeout);
-            clearTimeout(speedIncreaseTimeout);
-            clearTimeout(cloudSpawnTimeout);
-            clearTimeout(sunSpawnTimeout);
-            gameContainer.removeEventListener('pointerdown', handleTapInput);
+             isGameOver = true;
+             cancelAllPowerups(); // Reset all powerup states
+             clearInterval(gameLoopInterval);
+             clearInterval(scoreUpdateInterval);
+             clearTimeout(spawnTimeout);
+             clearTimeout(speedIncreaseTimeout);
+             clearTimeout(cloudSpawnTimeout);
+             clearTimeout(sunSpawnTimeout);
+             gameContainer.removeEventListener('pointerdown', handleTapInput);
 
-            saveHighScore();
-            finalScoreDisplay.textContent = Math.floor(score);
-            longestStreakDisplay.textContent = longestStreak; // Display longest streak
+             saveHighScore();
+             finalScoreDisplay.textContent = Math.floor(score);
+             longestStreakDisplay.textContent = longestStreak; // Display longest streak
 
-            hud.style.display = 'none';
-            gameOverScreen.style.display = 'flex';
-            player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
+             hud.style.display = 'none';
+             gameOverScreen.style.display = 'flex'; // Show game over screen
+             player.textContent = PLAYER_BEAVER_EMOJI; // Ensure player is beaver on game over
+             player.style.transform = `translateY(0px) scaleX(-1)`; // Reset transform
 
-            // Pause all layers
-            ground.style.animationPlayState = 'paused';
-            treeLayer.style.animationPlayState = 'paused';
-            midBackground.style.animationPlayState = 'paused';
-            farBackground.style.animationPlayState = 'paused';
-            if (activeSun) {
-                 activeSun.style.animationPlayState = 'paused';
-            }
+             // Pause all layers
+             ground.style.animationPlayState = 'paused';
+             treeLayer.style.animationPlayState = 'paused';
+             midBackground.style.animationPlayState = 'paused';
+             farBackground.style.animationPlayState = 'paused';
+             if (activeSun) {
+                  activeSun.style.animationPlayState = 'paused';
+             }
         }
 
          // Tap Input Logic
          function handleTapInput(event) {
-            if (isGameOver) return;
+             if (isGameOver) return;
 
-            const now = Date.now();
-            const timeSinceLastTap = now - lastTapTime;
+             const now = Date.now();
+             const timeSinceLastTap = now - lastTapTime;
 
-            // Reset tap count ONLY if tap is too slow
-            if (timeSinceLastTap > TRIPLE_TAP_WINDOW) {
-                tapCount = 0;
-            }
-            tapCount++;
-            lastTapTime = now;
-
-            // Check for Boost (only on 3rd tap in quick succession)
-            if (tapCount === 3 && !isBoosting) {
-                cancelAllPowerups('boost'); // Cancel others, keep boost if already active (though check prevents it)
-                isBoosting = true;
-                boostEndTime = Date.now() + BOOST_DURATION;
-
-                if (boostParticleInterval) clearInterval(boostParticleInterval);
-                boostParticleInterval = setInterval(() => {
-                    if (!isBoosting || isGameOver) {
-                        clearInterval(boostParticleInterval);
-                        return;
-                    }
-                    const playerRect = player.getBoundingClientRect();
-                    createParticle('boost', playerRect.left + playerRect.width * 0.1, playerRect.bottom - 5);
-                }, BOOST_PARTICLE_INTERVAL);
-
-                tapCount = 0; // Reset after boost attempt
-            }
-            // Handle Jump / Double Jump (if boost wasn't triggered on this tap)
-            else if (tapCount < 3 && jumpsRemaining > 0) {
-                let force = 0;
-                let isFirstAvailableJump = (jumpsRemaining === MAX_JUMPS);
-
-                if (isFirstAvailableJump && playerY >= -1) {
-                    force = JUMP_FORCE;
-                } else if (!isFirstAvailableJump && playerY < 0) {
-                    force = DOUBLE_JUMP_FORCE;
-                }
-
-                if (force !== 0) {
-                    playerVelocityY = force;
-                    jumpsRemaining--;
-                    createParticle('jump', player.getBoundingClientRect().left + player.clientWidth / 2, player.getBoundingClientRect().top + player.clientHeight / 2);
-                }
-            }
-             if (tapCount > 3) {
-                 tapCount = 0;
+             // Reset tap count ONLY if tap is too slow
+             if (timeSinceLastTap > TRIPLE_TAP_WINDOW) {
+                  tapCount = 0;
              }
-        }
+             tapCount++;
+             lastTapTime = now;
+
+             // Check for Boost (only on 3rd tap in quick succession)
+             if (tapCount === 3 && !isBoosting) {
+                  cancelAllPowerups('boost'); // Cancel others, keep boost if already active (though check prevents it)
+                  isBoosting = true;
+                  boostEndTime = Date.now() + BOOST_DURATION;
+
+                  if (boostParticleInterval) clearInterval(boostParticleInterval);
+                  boostParticleInterval = setInterval(() => {
+                       if (!isBoosting || isGameOver) {
+                            clearInterval(boostParticleInterval);
+                            return;
+                       }
+                       const playerRect = player.getBoundingClientRect();
+                       createParticle('boost', playerRect.left + playerRect.width * 0.1, playerRect.bottom - 5);
+                  }, BOOST_PARTICLE_INTERVAL);
+
+                  tapCount = 0; // Reset after boost attempt
+             }
+             // Handle Jump / Double Jump (if boost wasn't triggered on this tap)
+             else if (tapCount < 3 && jumpsRemaining > 0) {
+                  let force = 0;
+                  let isFirstAvailableJump = (jumpsRemaining === MAX_JUMPS);
+
+                  if (isFirstAvailableJump && playerY >= -1) {
+                       force = JUMP_FORCE;
+                  } else if (!isFirstAvailableJump && playerY < 0) {
+                       force = DOUBLE_JUMP_FORCE;
+                  }
+
+                  if (force !== 0) {
+                       playerVelocityY = force;
+                       jumpsRemaining--;
+                       createParticle('jump', player.getBoundingClientRect().left + player.clientWidth / 2, player.getBoundingClientRect().top + player.clientHeight / 2);
+                  }
+             }
+              if (tapCount > 3) {
+                  tapCount = 0;
+              }
+         }
 
 
+        // *** Update: Adjusted gameLoop speed logic ***
         function gameLoop() {
-            if (isGameOver) return;
+             if (isGameOver) return;
 
-            // --- Check Powerup End Times ---
-            let shouldRevertFromBear = false;
-            if (isBoosting && Date.now() > boostEndTime) {
-                isBoosting = false;
-                if (boostParticleInterval) clearInterval(boostParticleInterval);
-            }
-            // Check Bear Mode End FIRST
-            if (isBearMode && Date.now() > bearModeEndTime) {
-                 isBearMode = false;
-                 isInvincible = false; // Bear mode ending also ends invincibility
-                 shouldRevertFromBear = true;
-                 player.textContent = '🦫'; // Revert player emoji
+             // --- Check Powerup End Times ---
+             let shouldRevertFromBear = false;
+             let shouldRevertFromCash = false;
+
+             if (isBoosting && Date.now() > boostEndTime) {
+                  isBoosting = false;
+                  if (boostParticleInterval) clearInterval(boostParticleInterval);
+             }
+             // Check Dr. Fairfax Mode End FIRST
+             if (isDrFairfaxMode && Date.now() > drFairfaxModeEndTime) {
+                 isDrFairfaxMode = false;
+                 isInvincible = false; // Mode ending also ends invincibility
+                 shouldRevertFromCash = true;
                  invincibleOverlay.style.opacity = 0; // Fade out overlay
                  gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
-                 revertFromFish(); // Change obstacles back
-            }
-            // Check regular Invincibility End (if not in bear mode)
-            else if (isInvincible && !isBearMode && Date.now() > invincibilityEndTime) {
-                isInvincible = false;
-                invincibleOverlay.style.opacity = 0; // Fade out overlay
-                gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
-            }
-            if (isSlowed && Date.now() > slowdownEndTime) {
-                 isSlowed = false;
-            }
+                 revertFromCash(); // Change obstacles back
+                 // Revert player emoji ONLY if Bear mode isn't also active (unlikely but safe)
+                 if (!isBearMode) {
+                     player.textContent = PLAYER_BEAVER_EMOJI;
+                 }
+             }
+             // Check Bear Mode End (if not ending Dr. Fairfax mode)
+             else if (isBearMode && Date.now() > bearModeEndTime) {
+                  isBearMode = false;
+                  isInvincible = false; // Bear mode ending also ends invincibility
+                  shouldRevertFromBear = true;
+                  invincibleOverlay.style.opacity = 0; // Fade out overlay
+                  gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
+                  revertFromFish(); // Change obstacles back
+                  // Revert player emoji ONLY if Dr Fairfax mode isn't also active
+                  if (!isDrFairfaxMode) {
+                      player.textContent = PLAYER_BEAVER_EMOJI;
+                  }
+             }
+             // Check regular Invincibility End (if not in bear or Dr. Fairfax mode)
+             else if (isInvincible && !isBearMode && !isDrFairfaxMode && Date.now() > invincibilityEndTime) {
+                  isInvincible = false;
+                  invincibleOverlay.style.opacity = 0; // Fade out overlay
+                  gameContainer.classList.remove('invincible-mode'); // Remove border pulse class
+             }
+             if (isSlowed && Date.now() > slowdownEndTime) {
+                  isSlowed = false;
+             }
 
-            // --- Determine Effective Speed ---
-             // Priority: Boost > Log Invincibility > Slowdown > Streak > Normal
-             // Bear Mode uses normal speed unless boosting (or streak speed if applicable)
+             // --- Determine Effective Speed ---
+             // Priority: Boost > Log Invincibility > Dr Fairfax > Slowdown > Streak > Normal
+             // Bear Mode uses normal speed unless boosting
              let currentSpeedMultiplier = 1.0;
              // Calculate base multiplier from streak IF no other powerup affects speed negatively
              // AND not in bear mode (bear mode uses normal speed unless boosting)
-             // *** Updated Streak Speed Logic ***
-             if (!isBoosting && !(isInvincible && !isBearMode) && !isSlowed && !isBearMode) {
-                 if (currentStreak >= 15) {
-                     currentSpeedMultiplier = 1.4;
-                 } else if (currentStreak >= 10) {
-                     currentSpeedMultiplier = 1.3;
-                 } else if (currentStreak >= 5) {
-                     currentSpeedMultiplier = 1.2;
-                 } else if (currentStreak >= STREAK_START_THRESHOLD) { // 3-4
-                     currentSpeedMultiplier = 1.1;
-                 }
+             if (!isBoosting && !(isInvincible && !isBearMode) && !isSlowed && !isBearMode) { // Exclude bear mode from streak speed up
+                  if (currentStreak >= 15) {
+                       currentSpeedMultiplier = 1.4;
+                  } else if (currentStreak >= 10) {
+                       currentSpeedMultiplier = 1.3;
+                  } else if (currentStreak >= 5) {
+                       currentSpeedMultiplier = 1.2;
+                  } else if (currentStreak >= STREAK_START_THRESHOLD) { // 3-4
+                       currentSpeedMultiplier = 1.1;
+                  }
              }
              // Apply power-up multipliers (these take priority or modify the streak multiplier)
              if (isBoosting) {
-                 currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER; // Boost overrides everything
-             } else if (isInvincible && !isBearMode) { // Log invincibility overrides streak/slowdown
-                 currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
+                  currentSpeedMultiplier = BOOST_SPEED_MULTIPLIER; // Boost overrides everything
+             } else if (isInvincible && !isBearMode && !isDrFairfaxMode) { // Log invincibility overrides others (except boost)
+                  currentSpeedMultiplier = INVINCIBILITY_SPEED_MULTIPLIER;
+             } else if (isDrFairfaxMode) { // Dr. Fairfax overrides slowdown/streak
+                  currentSpeedMultiplier = DR_FAIRFAX_SPEED_MULTIPLIER;
              } else if (isSlowed) { // Slowdown overrides streak
-                 currentSpeedMultiplier = SLOWDOWN_MULTIPLIER;
+                  currentSpeedMultiplier = SLOWDOWN_MULTIPLIER;
              }
-             // If no overriding power-up, the streak multiplier calculated above remains.
+             // If no overriding power-up, the streak multiplier calculated above remains (unless in bear mode).
              // Bear mode itself doesn't change multiplier unless boosting is also active.
              const currentScrollSpeed = gameSpeed * currentSpeedMultiplier;
 
 
-            // 1. Player Physics
-            playerVelocityY += GRAVITY;
-            playerY += playerVelocityY;
-            let isOnGround = false;
-            if (playerY > 0) {
-                playerY = 0;
-                playerVelocityY = 0;
-                isOnGround = true;
-                if (jumpsRemaining < MAX_JUMPS) {
-                     jumpsRemaining = MAX_JUMPS;
-                     const now = Date.now();
-                     if (now - lastLandTime > 100) {
-                         const playerRect = player.getBoundingClientRect();
-                         createParticle('land', playerRect.left + playerRect.width / 2, playerRect.bottom - 10);
-                         lastLandTime = now;
-                     }
-                }
-                // Reset tap count when hitting ground
-                tapCount = 0;
-            }
+             // 1. Player Physics
+             playerVelocityY += GRAVITY;
+             playerY += playerVelocityY;
+             let isOnGround = false;
+             if (playerY > 0) {
+                  playerY = 0;
+                  playerVelocityY = 0;
+                  isOnGround = true;
+                  if (jumpsRemaining < MAX_JUMPS) {
+                       jumpsRemaining = MAX_JUMPS;
+                       const now = Date.now();
+                       if (now - lastLandTime > 100) {
+                            const playerRect = player.getBoundingClientRect();
+                            createParticle('land', playerRect.left + playerRect.width / 2, playerRect.bottom - 10);
+                            lastLandTime = now;
+                       }
+                  }
+                  // Reset tap count when hitting ground
+                  tapCount = 0;
+             }
 
-            // Apply transform and manage classes based on state
-            let scaleValue = (isInvincible || isBearMode) ? 2 : 1; // Use 2x scale when invincible or bear
-            let rotationValue = isBoosting ? -10 : 0; // degrees
-            player.style.transform = `translateY(${playerY}px) scale(${scaleValue}) scaleX(-1) rotate(${rotationValue}deg)`;
+             // Apply transform and manage classes based on state
+             let scaleValue = (isInvincible || isBearMode || isDrFairfaxMode) ? 2 : 1; // Use 2x scale when invincible/bear/drFairfax
+             let rotationValue = isBoosting ? -10 : 0; // degrees
+             player.style.transform = `translateY(${playerY}px) scale(${scaleValue}) scaleX(-1) rotate(${rotationValue}deg)`;
 
-            // Manage classes based on state (ensures correct visuals are applied/removed)
-            // Invincible class handles glow/size for both log and bear powerups
-            if (isInvincible || isBearMode) player.classList.add('invincible'); else player.classList.remove('invincible');
-            if (isBoosting) player.classList.add('boosting'); else player.classList.remove('boosting');
-            // Explicitly remove class if invincibility just ended
-            if(shouldRevertFromBear) player.classList.remove('invincible');
+             // Manage classes based on state (ensures correct visuals are applied/removed)
+             // Invincible class handles glow/size for log, bear, and Dr. Fairfax powerups
+             if (isInvincible || isBearMode || isDrFairfaxMode) player.classList.add('invincible'); else player.classList.remove('invincible');
+             if (isBoosting) player.classList.add('boosting'); else player.classList.remove('boosting');
+             // Explicitly remove class if invincibility just ended via timer
+             if(shouldRevertFromBear || shouldRevertFromCash) player.classList.remove('invincible');
 
 
-            // 2. Move Obstacles & Check Collision
-            const playerRect = player.getBoundingClientRect();
-            const obstaclesToRemove = [];
-            obstacles.forEach((obstacle, index) => {
-                obstacle.x -= currentScrollSpeed; // Use effective speed
-                obstacle.element.style.left = `${obstacle.x}px`;
-                const obstacleRect = obstacle.element.getBoundingClientRect();
+             // 2. Move Obstacles & Check Collision
+             const playerRect = player.getBoundingClientRect();
+             const obstaclesToRemove = [];
+             obstacles.forEach((obstacle, index) => {
+                  obstacle.x -= currentScrollSpeed; // Use effective speed
+                  obstacle.element.style.left = `${obstacle.x}px`;
+                  const obstacleRect = obstacle.element.getBoundingClientRect();
 
-                if (checkCollision(playerRect, obstacleRect)) {
-                    if (isBearMode) {
-                         // Bear Mode: Destroy fish, get points + streak
-                         const points = incrementStreak(BEAR_MODE_POINTS, 'bear', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
-                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'bear');
-                         obstaclesToRemove.push(index);
-                         obstacle.element.remove();
-                    }
-                    else if (isInvincible) { // Log Invincibility
-                         // Invincible: Destroy obstacle, get points + streak
-                         const points = incrementStreak(INVINCIBILITY_POINTS, 'powerup', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
-                         createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'powerup');
-                         obstaclesToRemove.push(index);
-                         obstacle.element.remove();
-                    } else if (obstacle.isInsect) {
-                        // Not Invincible: Squish Insect, get points + streak
-                        const points = incrementStreak(INSECT_SQUISH_POINTS, 'insect', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
-                        createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'insect');
-                        obstaclesToRemove.push(index);
-                        obstacle.element.remove();
-                    } else {
-                        // Not Invincible: Hit Fatal Animal - RESET STREAK
-                        resetStreak();
-                        endGame();
-                        return; // Stop processing this frame
-                    }
-                }
-                // Check if obstacle is off-screen
-                else if (obstacle.x + obstacleRect.width < 0) {
-                    obstaclesToRemove.push(index);
-                    obstacle.element.remove();
-                }
-            });
-            // Remove hit/off-screen obstacles
-            for (let i = obstaclesToRemove.length - 1; i >= 0; i--) {
-                obstacles.splice(obstaclesToRemove[i], 1);
-            }
+                  if (checkCollision(playerRect, obstacleRect)) {
+                       if (isDrFairfaxMode) {
+                           // Dr. Fairfax Mode: Destroy cash, get points + streak
+                           const points = incrementStreak(DR_FAIRFAX_MODE_POINTS, 'drFairfax', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                           createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'drFairfax');
+                           obstaclesToRemove.push(index);
+                           obstacle.element.remove();
+                       }
+                       else if (isBearMode) {
+                            // Bear Mode: Destroy fish, get points + streak
+                            const points = incrementStreak(BEAR_MODE_POINTS, 'bear', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                            createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'bear');
+                            obstaclesToRemove.push(index);
+                            obstacle.element.remove();
+                       }
+                       else if (isInvincible) { // Log Invincibility
+                            // Invincible: Destroy obstacle, get points + streak
+                            const points = incrementStreak(INVINCIBILITY_POINTS, 'powerup', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                            createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'powerup');
+                            obstaclesToRemove.push(index);
+                            obstacle.element.remove();
+                       } else if (obstacle.isInsect) {
+                            // Not Invincible: Squish Insect, get points + streak
+                            const points = incrementStreak(INSECT_SQUISH_POINTS, 'insect', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top);
+                            createParticle('score', obstacleRect.left + obstacleRect.width / 2, obstacleRect.top, `+${points}`, 'insect');
+                            obstaclesToRemove.push(index);
+                            obstacle.element.remove();
+                       } else {
+                            // Not Invincible: Hit Fatal Animal - RESET STREAK
+                            resetStreak();
+                            endGame();
+                            return; // Stop processing this frame
+                       }
+                  }
+                  // Check if obstacle is off-screen
+                  else if (obstacle.x + obstacleRect.width < 0) {
+                       obstaclesToRemove.push(index);
+                       obstacle.element.remove();
+                  }
+             });
+             // Remove hit/off-screen obstacles
+             for (let i = obstaclesToRemove.length - 1; i >= 0; i--) {
+                  obstacles.splice(obstaclesToRemove[i], 1);
+             }
 
-             // If game ended in the loop above, stop here
-             if (isGameOver) return;
+              // If game ended in the loop above, stop here
+              if (isGameOver) return;
 
-            // 3. Move Collectibles & Check Collision (Crowns, Logs, Bread, Bears)
-            const collectiblesToRemove = [];
-            collectibles.forEach((item, index) => {
-                item.x -= currentScrollSpeed; // Use effective speed
-                // If in bear mode, collectibles also move (and are fish)
-                if (isBearMode && !item.isBear) { // Check it's not the triggering bear
-                     item.element.style.left = `${item.x}px`;
-                     const itemRect = item.element.getBoundingClientRect();
-                     if (checkCollision(playerRect, itemRect)) {
-                         // Hit a transformed collectible (fish) - counts for streak
-                         const points = incrementStreak(BEAR_MODE_POINTS, 'bear', itemRect.left + itemRect.width / 2, itemRect.top);
-                         createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${points}`, 'bear');
-                         collectiblesToRemove.push(index);
-                         item.element.remove();
-                     } else if (item.x + itemRect.width < 0) {
-                         collectiblesToRemove.push(index);
-                         item.element.remove();
-                     }
-                }
-                // Handle normal collectible collision if not in bear mode
-                else if (!isBearMode) {
-                    item.element.style.left = `${item.x}px`;
-                    const itemRect = item.element.getBoundingClientRect();
-                    if (checkCollision(playerRect, itemRect)) {
-                        // --- Power-up Activation & Priority ---
-                        let collected = true; // Assume collected unless ignored
-                        if (item.isLog) {
-                             cancelAllPowerups('invincible'); // Cancel others, keep invincible visuals if already on
-                             isInvincible = true;
-                             invincibilityEndTime = Date.now() + INVINCIBILITY_DURATION;
-                             invincibleOverlay.style.opacity = 0.4;
-                             gameContainer.classList.add('invincible-mode');
-                             createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
-                             incrementStreak(0, 'log', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for log itself
-                        } else if (item.isBread) {
-                             cancelAllPowerups('slowdown'); // Cancel others
-                             isSlowed = true;
-                             slowdownEndTime = Date.now() + SLOWDOWN_DURATION;
-                             createParticle('slowdown-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'Loaf of bread!');
-                             incrementStreak(0, 'bread', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for bread itself
-                        } else if (item.isBear) {
-                             cancelAllPowerups('bear'); // Cancel others
-                             isBearMode = true;
-                             isInvincible = true; // Bear mode grants invincibility
-                             bearModeEndTime = Date.now() + BEAR_MODE_DURATION;
-                             invincibilityEndTime = bearModeEndTime; // Sync end times
-                             player.textContent = BEAR_MODE_PLAYER_EMOJI;
-                             invincibleOverlay.style.opacity = 0.4; // Use overlay for consistency
-                             gameContainer.classList.add('invincible-mode'); // Use border pulse
-                             transformToFish(); // Change existing items
-                             createParticle('bear-mode-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'If you gotta eat...eat!');
-                             incrementStreak(0, 'bear-collect', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, use specific type
-                        } else if (item.isCrown) {
-                             // Collect crown, apply streak multiplier
-                             const finalPoints = incrementStreak(CROWN_POINTS, 'crown', itemRect.left + itemRect.width / 2, itemRect.top);
-                             createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${finalPoints}`); // Show final points
-                        } else {
-                            collected = false; // Should not happen, but safety check
-                        }
-                        // Remove the collected item
-                        if (collected) {
+             // 3. Move Collectibles & Check Collision (Crowns, Logs, Bread, Bears, Dr. Fairfax)
+             const collectiblesToRemove = [];
+             collectibles.forEach((item, index) => {
+                  item.x -= currentScrollSpeed; // Use effective speed
+                  const itemRect = item.element.getBoundingClientRect(); // Get rect before potential removal
+
+                  // If in bear mode OR Dr. Fairfax mode, collectibles also move (and are fish/cash)
+                  if ((isBearMode || isDrFairfaxMode) && !item.isBear && !item.isDrFairfax) { // Check it's not the triggering item
+                       item.element.style.left = `${item.x}px`;
+                       if (checkCollision(playerRect, itemRect)) {
+                            // Hit a transformed collectible (fish or cash) - counts for streak
+                            let points = 0;
+                            let scoreType = '';
+                            if (isBearMode) {
+                                points = incrementStreak(BEAR_MODE_POINTS, 'bear', itemRect.left + itemRect.width / 2, itemRect.top);
+                                scoreType = 'bear';
+                            } else { // isDrFairfaxMode
+                                points = incrementStreak(DR_FAIRFAX_MODE_POINTS, 'drFairfax', itemRect.left + itemRect.width / 2, itemRect.top);
+                                scoreType = 'drFairfax';
+                            }
+                            createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${points}`, scoreType);
                             collectiblesToRemove.push(index);
                             item.element.remove();
-                        }
-                    }
-                    else if (item.x + itemRect.width < 0) { // Item off-screen
-                        collectiblesToRemove.push(index);
-                        item.element.remove();
-                    }
-                }
-                 // If in bear mode and item is off screen
-                 else if (isBearMode && item.x + item.element.getBoundingClientRect().width < 0) {
-                     collectiblesToRemove.push(index);
-                     item.element.remove();
-                 }
-
-            });
-            for (let i = collectiblesToRemove.length - 1; i >= 0; i--) {
-                collectibles.splice(collectiblesToRemove[i], 1);
-            }
+                       } else if (item.x + itemRect.width < 0) {
+                            collectiblesToRemove.push(index);
+                            item.element.remove();
+                       }
+                  }
+                  // Handle normal collectible collision if not in bear/Dr. Fairfax mode OR if it's the trigger item itself
+                  else {
+                       item.element.style.left = `${item.x}px`;
+                       if (checkCollision(playerRect, itemRect)) {
+                            // --- Power-up Activation & Priority ---
+                            let collected = true; // Assume collected unless ignored
+                            if (item.isLog) {
+                                 cancelAllPowerups('invincible'); // Cancel others, keep invincible visuals if already on
+                                 isInvincible = true;
+                                 isBearMode = false; // Ensure bear mode is off
+                                 isDrFairfaxMode = false; // Ensure Dr. Fairfax mode is off
+                                 invincibilityEndTime = Date.now() + INVINCIBILITY_DURATION;
+                                 invincibleOverlay.style.opacity = 0.4;
+                                 gameContainer.classList.add('invincible-mode');
+                                 // Player emoji handled by cancelAllPowerups
+                                 createParticle('powerup-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'INVINCIBLE!');
+                                 incrementStreak(0, 'log', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for log itself
+                            } else if (item.isBread) {
+                                 cancelAllPowerups('slowdown'); // Cancel others
+                                 isSlowed = true;
+                                 slowdownEndTime = Date.now() + SLOWDOWN_DURATION;
+                                 // Player emoji handled by cancelAllPowerups
+                                 createParticle('slowdown-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'Loaf of bread!');
+                                 incrementStreak(0, 'bread', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, no points for bread itself
+                            } else if (item.isBear) {
+                                 cancelAllPowerups('bear'); // Cancel others
+                                 isBearMode = true;
+                                 isInvincible = true; // Bear mode grants invincibility
+                                 isDrFairfaxMode = false; // Ensure Dr. Fairfax mode is off
+                                 bearModeEndTime = Date.now() + BEAR_MODE_DURATION;
+                                 invincibilityEndTime = bearModeEndTime; // Sync end times
+                                 player.textContent = BEAR_MODE_PLAYER_EMOJI; // Explicitly set bear emoji on activation
+                                 invincibleOverlay.style.opacity = 0.4; // Use overlay for consistency
+                                 gameContainer.classList.add('invincible-mode'); // Use border pulse
+                                 transformToFish(); // Change existing items
+                                 createParticle('bear-mode-activate', itemRect.left + itemRect.width / 2, itemRect.top, 'If you gotta eat...eat!');
+                                 incrementStreak(0, 'bear-collect', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak, use specific type
+                            } else if (item.isDrFairfax) { // *** Dr. Fairfax Mode: Activation ***
+                                 cancelAllPowerups('drFairfax'); // Cancel others
+                                 isDrFairfaxMode = true;
+                                 isInvincible = true; // Dr. Fairfax mode grants invincibility
+                                 isBearMode = false; // Ensure bear mode is off
+                                 drFairfaxModeEndTime = Date.now() + DR_FAIRFAX_MODE_DURATION;
+                                 invincibilityEndTime = drFairfaxModeEndTime; // Sync end times
+                                 player.textContent = DR_FAIRFAX_EMOJI; // *** Update: Set player emoji ***
+                                 invincibleOverlay.style.opacity = 0.4; // Use overlay
+                                 gameContainer.classList.add('invincible-mode'); // Use border pulse
+                                 transformToCash(); // Change existing items to cash
+                                 createParticle('dr-fairfax-mode-activate', itemRect.left + itemRect.width / 2, itemRect.top);
+                                 incrementStreak(0, 'drFairfax-collect', itemRect.left + itemRect.width / 2, itemRect.top); // Increment streak
+                            } else if (item.isCrown) {
+                                 // Collect crown, apply streak multiplier
+                                 const finalPoints = incrementStreak(CROWN_POINTS, 'crown', itemRect.left + itemRect.width / 2, itemRect.top);
+                                 createParticle('score', itemRect.left + itemRect.width / 2, itemRect.top, `+${finalPoints}`); // Show final points
+                            } else {
+                                 collected = false; // Should not happen, but safety check
+                            }
+                            // Remove the collected item
+                            if (collected) {
+                                 collectiblesToRemove.push(index);
+                                 item.element.remove();
+                            }
+                       }
+                       else if (item.x + itemRect.width < 0) { // Item off-screen
+                            collectiblesToRemove.push(index);
+                            item.element.remove();
+                       }
+                  }
+             });
+             for (let i = collectiblesToRemove.length - 1; i >= 0; i--) {
+                  collectibles.splice(collectiblesToRemove[i], 1);
+             }
         }
 
         // Combined Spawner
+        // *** Update: Corrected initial positioning logic ***
         function spawnGameObject() {
-            if (isGameOver) return;
-            const gameWidth = gameContainer.clientWidth;
-            const initialX = gameWidth + 50;
-            let element;
-            let isFlying = false;
-            let spawnType = 'obstacle'; // Default
-            let emojiChar = ''; // Hold the final emoji
-            let originalEmoji = ''; // Store original for bear mode revert
+             if (isGameOver) return;
+             const gameWidth = gameContainer.clientWidth;
+             const initialX = gameWidth + 50;
+             let element;
+             let isFlying = false; // Determine flying status before creating object
+             let spawnType = 'obstacle'; // Default
+             let emojiChar = ''; // Hold the final emoji
+             let originalEmoji = ''; // Store original for mode reverts
 
-            // Decide object type: Bear > Bread > Log > Crown > Obstacle
-            const randomType = Math.random();
-            // *** Using Final Spawn Frequencies ***
-            if (randomType < BEAR_SPAWN_CHANCE) { // Bear (3%)
+             // Decide object type: DrFairfax > Bear > Bread > Log > Crown > Obstacle
+             const randomType = Math.random();
+             // Calculate cumulative probabilities with updated Dr. Fairfax chance
+             const drFairfaxThreshold = DR_FAIRFAX_SPAWN_CHANCE; // 0.30 (Updated)
+             const bearThreshold = drFairfaxThreshold + BEAR_SPAWN_CHANCE; // 0.30 + 0.03 = 0.33
+             const breadThreshold = bearThreshold + BREAD_SPAWN_CHANCE; // 0.33 + 0.03 = 0.36
+             const logThreshold = breadThreshold + LOG_SPAWN_CHANCE; // 0.36 + 0.04 = 0.40
+             const crownThreshold = logThreshold + CROWN_SPAWN_CHANCE; // 0.40 + 0.05 = 0.45
+
+             if (randomType < drFairfaxThreshold) { // Dr. Fairfax (30%)
+                 spawnType = 'drFairfax';
+                 emojiChar = DR_FAIRFAX_EMOJI;
+                 isFlying = false; // Dr. Fairfax always on ground
+             } else if (randomType < bearThreshold) { // Bear (next 3%)
                  spawnType = 'bear';
                  emojiChar = BEAR_EMOJI;
-            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE) { // Bread (next 3% = 6% total)
+                 isFlying = false; // Bear always on ground
+             } else if (randomType < breadThreshold) { // Bread (next 3%)
                  spawnType = 'bread';
                  emojiChar = BREAD_EMOJI;
-            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE + LOG_SPAWN_CHANCE) { // Log (next 4% = 10% total)
+                 isFlying = false; // Bread always on ground
+             } else if (randomType < logThreshold) { // Log (next 4%)
                  spawnType = 'log';
                  emojiChar = LOG_EMOJI;
-            } else if (randomType < BEAR_SPAWN_CHANCE + BREAD_SPAWN_CHANCE + LOG_SPAWN_CHANCE + CROWN_SPAWN_CHANCE) { // Crown (next 5% = 15% total)
+                 isFlying = false; // Log always on ground
+             } else if (randomType < crownThreshold) { // Crown (next 5%)
                  spawnType = 'crown';
                  emojiChar = CROWN_EMOJI;
-            } // Obstacle is the remaining 85%
-
-            // --- Create element based on type ---
-            if (spawnType !== 'obstacle') {
-                 element = document.createElement('div');
-                 originalEmoji = emojiChar; // Store original for collectibles too
-
-                 if (spawnType === 'bear') {
-                     element.classList.add('powerup-bear');
-                     isFlying = false; // Bear always on ground
-                     collectibles.push({ element, x: initialX, isBear: true, originalEmoji });
-                 } else if (spawnType === 'bread') {
-                     element.classList.add('powerup-bread');
-                     isFlying = false; // Bread always on ground
-                     collectibles.push({ element, x: initialX, isBread: true, originalEmoji });
-                 } else if (spawnType === 'log') {
-                     element.classList.add('powerup-log');
-                     isFlying = false; // Log always on ground
-                     collectibles.push({ element, x: initialX, isLog: true, originalEmoji });
-                 } else if (spawnType === 'crown') {
-                     element.classList.add('collectible');
-                     isFlying = Math.random() < 0.5; // Crowns can fly
-                     collectibles.push({ element, x: initialX, isCrown: true, originalEmoji });
-                 }
-            } else { // Spawn Obstacle
+                 isFlying = Math.random() < 0.5; // Crowns can fly
+             } else { // Obstacle is the remaining 55%
+                 spawnType = 'obstacle'; // Explicitly set type
+                 // Determine if flying obstacle first
                  isFlying = Math.random() < FLYING_OBSTACLE_CHANCE;
                  let isInsect = false;
-                 let isFatal = false;
-
+                 // Determine emoji and insect status based on flying status
                  if (isFlying) {
                      const potentialEmojis = insectEmojis.filter(e => flyingInsectEmojis.includes(e));
                      emojiChar = potentialEmojis.length > 0 ? getRandomElement(potentialEmojis) : getRandomElement(insectEmojis);
-                     isInsect = true; isFatal = false;
+                     isInsect = true;
                  } else {
                      if (Math.random() < 0.4) { // Ground insect
                          emojiChar = getRandomElement(insectEmojis.filter(e => !flyingInsectEmojis.includes(e)));
-                         isInsect = true; isFatal = false;
+                         isInsect = true;
                      } else { // Ground animal
                          emojiChar = getRandomElement(animalEmojis);
-                         isInsect = false; isFatal = true;
+                         isInsect = false;
                      }
                  }
-                 originalEmoji = emojiChar; // Store original for obstacles too
+             }
 
-                 element = document.createElement('div');
+             // --- Create element ---
+             element = document.createElement('div');
+             originalEmoji = emojiChar; // Store original emoji
+
+             // --- Add to correct array and apply classes ---
+             if (spawnType === 'obstacle') {
+                 let isInsect = insectEmojis.includes(originalEmoji);
+                 let isFatal = !isInsect;
                  element.classList.add('obstacle');
                  if (isInsect) element.classList.add('insect');
-
                  obstacles.push({ element, x: initialX, isInsect, isFatal, isFlying, originalEmoji });
-            }
+             } else { // Is a collectible
+                 if (spawnType === 'drFairfax') {
+                     element.classList.add('powerup-dr-fairfax');
+                     collectibles.push({ element, x: initialX, isDrFairfax: true, isFlying, originalEmoji });
+                 } else if (spawnType === 'bear') {
+                     element.classList.add('powerup-bear');
+                     collectibles.push({ element, x: initialX, isBear: true, isFlying, originalEmoji });
+                 } else if (spawnType === 'bread') {
+                     element.classList.add('powerup-bread');
+                     collectibles.push({ element, x: initialX, isBread: true, isFlying, originalEmoji });
+                 } else if (spawnType === 'log') {
+                     element.classList.add('powerup-log');
+                     collectibles.push({ element, x: initialX, isLog: true, isFlying, originalEmoji });
+                 } else if (spawnType === 'crown') {
+                     element.classList.add('collectible');
+                     collectibles.push({ element, x: initialX, isCrown: true, isFlying, originalEmoji });
+                 }
+             }
 
-            // --- Set position and final appearance ---
-            if (isFlying) {
-                const bottomPos = getRandomInt(FLYING_OBSTACLE_BOTTOM_MIN, FLYING_OBSTACLE_BOTTOM_MAX);
-                element.style.bottom = `${bottomPos}%`;
-            } else {
-                element.style.bottom = `${GROUND_HEIGHT_PERCENT}%`;
-            }
-            element.style.left = `${initialX}px`;
+             // *** Update: Moved initial position setting here, BEFORE mode checks ***
+             // --- Set initial position ---
+             if (isFlying) {
+                  const bottomPos = getRandomInt(FLYING_OBSTACLE_BOTTOM_MIN, FLYING_OBSTACLE_BOTTOM_MAX);
+                  element.style.bottom = `${bottomPos}%`;
+             } else {
+                  element.style.bottom = `${GROUND_HEIGHT_PERCENT}%`; // Set ground position
+             }
+             element.style.left = `${initialX}px`;
 
-            // *** Check if Bear Mode is active DURING spawn ***
-            if (isBearMode) {
-                element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
-                element.classList.add('turned-fish');
-            } else {
-                 element.textContent = originalEmoji; // Ensure correct emoji if not in bear mode
-            }
 
-            gameContainer.insertBefore(element, particlesContainer);
+             // --- Set final appearance based on current game mode ---
+             if (isDrFairfaxMode && spawnType !== 'drFairfax') { // Don't change the trigger item itself
+                 element.textContent = DR_FAIRFAX_OBSTACLE_EMOJI; // Cash
+                 element.classList.add('turned-cash', 'large-cash'); // Add large class
+                 element.classList.remove('turned-fish');
+                 // No need to reset bottom style here, already set above
+             } else if (isBearMode && spawnType !== 'bear') { // Don't change the trigger item itself
+                  element.textContent = BEAR_MODE_OBSTACLE_EMOJI; // Fish
+                  element.classList.add('turned-fish');
+                  element.classList.remove('turned-cash', 'large-cash'); // Remove cash/large classes
+                  // No need to reset bottom style here
+             } else {
+                  element.textContent = originalEmoji; // Ensure correct emoji if not in a special mode
+                  element.classList.remove('turned-fish');
+                  element.classList.remove('turned-cash', 'large-cash'); // Remove cash/large classes
+             }
 
-            scheduleNextSpawn();
+             gameContainer.insertBefore(element, particlesContainer);
+
+             scheduleNextSpawn();
         }
 
 
 
         function scheduleNextSpawn() {
-             if (isGameOver) return;
-             const baseDelay = getRandomInt(OBSTACLE_SPAWN_MIN_INTERVAL, OBSTACLE_SPAWN_MAX_INTERVAL);
-             const speedFactor = Math.max(0.5, INITIAL_GAME_SPEED / gameSpeed);
-             const spawnDelay = Math.max(350, baseDelay * speedFactor);
-             spawnTimeout = setTimeout(spawnGameObject, spawnDelay);
+              if (isGameOver) return;
+              const baseDelay = getRandomInt(OBSTACLE_SPAWN_MIN_INTERVAL, OBSTACLE_SPAWN_MAX_INTERVAL);
+              const speedFactor = Math.max(0.5, INITIAL_GAME_SPEED / gameSpeed);
+              const spawnDelay = Math.max(350, baseDelay * speedFactor);
+              spawnTimeout = setTimeout(spawnGameObject, spawnDelay);
         }
 
         function updateAnimationSpeeds() {
-             // Base parallax speeds are updated based on gameSpeed
-             const groundDuration = Math.max(0.5, 10 / gameSpeed);
-             const treeDuration = Math.max(2, 48 / gameSpeed);
-             const midDuration = Math.max(2, 60 / gameSpeed); // Hills use this
-             const farDuration = Math.max(5, 160 / gameSpeed);
+              // Base parallax speeds are updated based on gameSpeed
+              const groundDuration = Math.max(0.5, 10 / gameSpeed);
+              const treeDuration = Math.max(2, 48 / gameSpeed);
+              const midDuration = Math.max(2, 60 / gameSpeed); // Hills use this
+              const farDuration = Math.max(5, 160 / gameSpeed);
 
-             ground.style.animationDuration = `${groundDuration}s`;
-             treeLayer.style.animationDuration = `${treeDuration}s`;
-             midBackground.style.animationDuration = `${midDuration}s`;
-             farBackground.style.animationDuration = `${farDuration}s`;
-             // Sun speed is fixed by its animation duration in CSS
+              ground.style.animationDuration = `${groundDuration}s`;
+              treeLayer.style.animationDuration = `${treeDuration}s`;
+              midBackground.style.animationDuration = `${midDuration}s`;
+              farBackground.style.animationDuration = `${farDuration}s`;
+              // Sun speed is fixed by its animation duration in CSS
         }
 
          function scheduleSpeedIncrease() {
-             if (isGameOver) return;
-             speedIncreaseTimeout = setTimeout(() => {
-                if (gameSpeed < MAX_GAME_SPEED) {
-                     gameSpeed += SPEED_INCREMENT;
-                     gameSpeed = Math.min(gameSpeed, MAX_GAME_SPEED);
-                     updateAnimationSpeeds();
-                }
-                 scheduleSpeedIncrease();
-             }, SPEED_INCREASE_INTERVAL);
+              if (isGameOver) return;
+              speedIncreaseTimeout = setTimeout(() => {
+                  if (gameSpeed < MAX_GAME_SPEED) {
+                       gameSpeed += SPEED_INCREMENT;
+                       gameSpeed = Math.min(gameSpeed, MAX_GAME_SPEED);
+                       updateAnimationSpeeds();
+                  }
+                   scheduleSpeedIncrease();
+              }, SPEED_INCREASE_INTERVAL);
          }
 
         // --- Initialization ---
@@ -1525,26 +1751,27 @@
         playAgainButton.addEventListener('click', startGame);
 
         window.addEventListener('load', () => {
-            loadHighScore();
-            updateGroundHeight(); // Set initial ground height variable
-            startScreen.style.display = 'flex';
-            gameOverScreen.style.display = 'none';
-            hud.style.display = 'none';
-            player.style.transform = `translateY(0px) scaleX(-1)`;
-            updateAnimationSpeeds(); // Set initial animation speeds
-            // Ensure all layers are paused initially
-            ground.style.animationPlayState = 'paused';
-            treeLayer.style.animationPlayState = 'paused';
-            midBackground.style.animationPlayState = 'paused';
-            farBackground.style.animationPlayState = 'paused';
-            invincibleOverlay.style.opacity = 0; // Ensure overlay is hidden
-            gameContainer.classList.remove('invincible-mode'); // Ensure border pulse class removed
-            // Sun is not active initially
+             loadHighScore();
+             updateGroundHeight(); // Set initial ground height variable
+             startScreen.style.display = 'flex';
+             gameOverScreen.style.display = 'none';
+             hud.style.display = 'none';
+             player.textContent = PLAYER_BEAVER_EMOJI; // Ensure player starts as beaver
+             player.style.transform = `translateY(0px) scaleX(-1)`;
+             updateAnimationSpeeds(); // Set initial animation speeds
+             // Ensure all layers are paused initially
+             ground.style.animationPlayState = 'paused';
+             treeLayer.style.animationPlayState = 'paused';
+             midBackground.style.animationPlayState = 'paused';
+             farBackground.style.animationPlayState = 'paused';
+             invincibleOverlay.style.opacity = 0; // Ensure overlay is hidden
+             gameContainer.classList.remove('invincible-mode'); // Ensure border pulse class removed
+             // Sun is not active initially
         });
 
         // Update ground height variable on resize
         window.addEventListener('resize', () => {
-            updateGroundHeight();
+             updateGroundHeight();
         });
 
     </script>
