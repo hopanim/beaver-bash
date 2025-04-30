@@ -439,7 +439,7 @@
              /* color: #98FB98;  Color is handled by animation */
              font-weight: bold;
              text-shadow: 1px 1px 0px #2E8B57, 0 0 6px white; /* Sea Green shadow */
-             animation: scoreFadeUp 1.5s ease-out forwards, flashColor 0.2s linear infinite; /* Add flashColor animation */
+             animation: bearTextFadeUp 2.5s ease-out forwards, flashColor 0.2s linear infinite; /* Update: Use bearTextFadeUp animation, Add flashColor animation */
          }
         /* Boost particle style */
         .particle.boost-smoke {
@@ -619,9 +619,10 @@
         const DEFAULT_SKY_COLOR = '#44AAFF';
         const INVINCIBLE_SKY_COLOR = '#DA70D6';
         const INITIAL_GAME_SPEED = 4;
-        const SPEED_INCREASE_INTERVAL = 8000;
-        const SPEED_INCREMENT = 0.4;
-        const MAX_GAME_SPEED = 12;
+        // *** Update: Changed speed increase interval and amount ***
+        const SPEED_INCREASE_INTERVAL = 8000; // Increase speed every 8 seconds (was 6000)
+        const SPEED_INCREMENT = 0.9; // Increase speed by 0.9 (was 1.5)
+        const MAX_GAME_SPEED = 12; // Keep a max speed to prevent it getting *too* crazy
         const GRAVITY = 0.5;
         const JUMP_FORCE = -11;
         const DOUBLE_JUMP_FORCE = -9;
@@ -663,8 +664,8 @@
         const SLOWDOWN_MULTIPLIER = 0.3;
         // *** Dr. Fairfax Mode: Added constants ***
         const DR_FAIRFAX_EMOJI = '👩🏼‍⚕️'; // Note: May render differently across browsers/OS
-        // *** Update: Increased spawn chance for testing ***
-        const DR_FAIRFAX_SPAWN_CHANCE = 0.30; // 30% (was 0.02)
+        // *** Update: Set spawn chance back to normal ***
+        const DR_FAIRFAX_SPAWN_CHANCE = 0.03; // 3% (was 0.30 for testing)
         const DR_FAIRFAX_MODE_DURATION = 5000; // 5 seconds
         const DR_FAIRFAX_OBSTACLE_EMOJI = '💰';
         const DR_FAIRFAX_MODE_POINTS = 100; // Same as bear mode
@@ -799,7 +800,7 @@
 
 
         // --- Particle System ---
-        // *** Dr. Fairfax Mode: Added cases for 'dr-fairfax-mode-activate' and score type 'drFairfax' ***
+        // *** Update: Changed duration for Dr. Fairfax activation text ***
         function createParticle(type, x, y, text = null, isSpecialScore = false) {
              const particle = document.createElement('div');
              particle.classList.add('particle');
@@ -868,7 +869,7 @@
                     case 'dr-fairfax-mode-activate':
                          particle.classList.add('dr-fairfax-mode-text');
                          emoji = text || DR_FAIRFAX_ACTIVATION_TEXT;
-                         duration = 1500; // Duration of the fade-up
+                         duration = 2500; // Update: Match bear mode duration (was 1500)
                          // The flashing animation runs concurrently via CSS
                          break;
                     // --- End Dr. Fairfax Mode ---
@@ -1170,7 +1171,7 @@
              updateStreakDisplay(); // Hide streak display
              tapCount = 0;
              lastTapTime = 0;
-             gameSpeed = INITIAL_GAME_SPEED;
+             gameSpeed = INITIAL_GAME_SPEED; // Reset game speed to initial
 
              obstacles.forEach(obs => obs.element.remove());
              obstacles = [];
@@ -1206,7 +1207,7 @@
              farBackground.style.animationPlayState = 'running';
              if (activeSun) activeSun.style.animationPlayState = 'running';
 
-             updateAnimationSpeeds();
+             updateAnimationSpeeds(); // Apply initial speeds
 
              if (gameLoopInterval) clearInterval(gameLoopInterval);
              gameLoopInterval = setInterval(gameLoop, 1000 / 60);
@@ -1218,7 +1219,7 @@
              scheduleNextSpawn();
 
              if (speedIncreaseTimeout) clearTimeout(speedIncreaseTimeout);
-             scheduleSpeedIncrease();
+             scheduleSpeedIncrease(); // Start the speed increase schedule
 
              if (cloudSpawnTimeout) clearTimeout(cloudSpawnTimeout);
              scheduleNextCloud();
@@ -1234,7 +1235,7 @@
              clearInterval(gameLoopInterval);
              clearInterval(scoreUpdateInterval);
              clearTimeout(spawnTimeout);
-             clearTimeout(speedIncreaseTimeout);
+             clearTimeout(speedIncreaseTimeout); // Stop speed increases
              clearTimeout(cloudSpawnTimeout);
              clearTimeout(sunSpawnTimeout);
              gameContainer.removeEventListener('pointerdown', handleTapInput);
@@ -1586,7 +1587,7 @@
         }
 
         // Combined Spawner
-        // *** Update: Corrected initial positioning logic ***
+        // *** Update: Adjusted spawn thresholds ***
         function spawnGameObject() {
              if (isGameOver) return;
              const gameWidth = gameContainer.clientWidth;
@@ -1600,13 +1601,13 @@
              // Decide object type: DrFairfax > Bear > Bread > Log > Crown > Obstacle
              const randomType = Math.random();
              // Calculate cumulative probabilities with updated Dr. Fairfax chance
-             const drFairfaxThreshold = DR_FAIRFAX_SPAWN_CHANCE; // 0.30 (Updated)
-             const bearThreshold = drFairfaxThreshold + BEAR_SPAWN_CHANCE; // 0.30 + 0.03 = 0.33
-             const breadThreshold = bearThreshold + BREAD_SPAWN_CHANCE; // 0.33 + 0.03 = 0.36
-             const logThreshold = breadThreshold + LOG_SPAWN_CHANCE; // 0.36 + 0.04 = 0.40
-             const crownThreshold = logThreshold + CROWN_SPAWN_CHANCE; // 0.40 + 0.05 = 0.45
+             const drFairfaxThreshold = DR_FAIRFAX_SPAWN_CHANCE; // 0.03 (Updated)
+             const bearThreshold = drFairfaxThreshold + BEAR_SPAWN_CHANCE; // 0.03 + 0.03 = 0.06
+             const breadThreshold = bearThreshold + BREAD_SPAWN_CHANCE; // 0.06 + 0.03 = 0.09
+             const logThreshold = breadThreshold + LOG_SPAWN_CHANCE; // 0.09 + 0.04 = 0.13
+             const crownThreshold = logThreshold + CROWN_SPAWN_CHANCE; // 0.13 + 0.05 = 0.18
 
-             if (randomType < drFairfaxThreshold) { // Dr. Fairfax (30%)
+             if (randomType < drFairfaxThreshold) { // Dr. Fairfax (3%)
                  spawnType = 'drFairfax';
                  emojiChar = DR_FAIRFAX_EMOJI;
                  isFlying = false; // Dr. Fairfax always on ground
@@ -1626,7 +1627,7 @@
                  spawnType = 'crown';
                  emojiChar = CROWN_EMOJI;
                  isFlying = Math.random() < 0.5; // Crowns can fly
-             } else { // Obstacle is the remaining 55%
+             } else { // Obstacle is the remaining 82%
                  spawnType = 'obstacle'; // Explicitly set type
                  // Determine if flying obstacle first
                  isFlying = Math.random() < FLYING_OBSTACLE_CHANCE;
@@ -1734,16 +1735,18 @@
               // Sun speed is fixed by its animation duration in CSS
         }
 
+         // *** Update: Changed speed increase logic ***
          function scheduleSpeedIncrease() {
               if (isGameOver) return;
               speedIncreaseTimeout = setTimeout(() => {
-                  if (gameSpeed < MAX_GAME_SPEED) {
-                       gameSpeed += SPEED_INCREMENT;
-                       gameSpeed = Math.min(gameSpeed, MAX_GAME_SPEED);
-                       updateAnimationSpeeds();
-                  }
-                   scheduleSpeedIncrease();
-              }, SPEED_INCREASE_INTERVAL);
+                  // Increase game speed by SPEED_INCREMENT, respecting MAX_GAME_SPEED
+                  // Note: We don't need the check 'if (gameSpeed < MAX_GAME_SPEED)' here
+                  // because Math.min will handle capping it at MAX_GAME_SPEED anyway.
+                  gameSpeed += SPEED_INCREMENT;
+                  gameSpeed = Math.min(gameSpeed, MAX_GAME_SPEED);
+                  updateAnimationSpeeds(); // Update background scroll speeds based on new gameSpeed
+                  scheduleSpeedIncrease(); // Schedule the next increase
+              }, SPEED_INCREASE_INTERVAL); // Use the updated interval (8000ms)
          }
 
         // --- Initialization ---
